@@ -12,10 +12,11 @@ namespace Sheep
         [SerializeField] private float seperationRadius;
         [SerializeField] private float alignmentRadius;
         [SerializeField] private float escapeRadius;
+        [SerializeField] private float wallAvoidanceRadius;
 
         [SerializeField] private float seperationSoftness = 1f;
         [SerializeField] private float escapeSoftness = 10f;
-
+        [SerializeField] private float wallSoftness = 3f;
         [Header("Weights")]
         //first weight
         [Range(0,1f)]
@@ -25,6 +26,7 @@ namespace Sheep
         [Range(0, 1f)]
         [SerializeField] private float firstAlignmentWeight = 1f;
         [SerializeField] private float escapeWeight = 1f;
+        [SerializeField] private float wallAvoidanceWeight = 4f;
         //second weights
         [SerializeField] private float secondCohesionWeight = 1f;
         [SerializeField] private float secondSeperationWeight = 1f;
@@ -47,6 +49,10 @@ namespace Sheep
         [SerializeField] private float yOffset;
         [SerializeField] private int numberOfSheep;
         [SerializeField] private GameObject sheepPrefab;
+
+        [Header("Exit Timer")]
+        [SerializeField] private float timeToEnterIdle;
+
         #region getter
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
         #region radius
@@ -54,10 +60,12 @@ namespace Sheep
         public float SeperationRadius { get => seperationRadius; set => seperationRadius = value; }
         public float AlignmentRadius { get => alignmentRadius; set => alignmentRadius = value; }
         public float EscapeRadius { get => escapeRadius; set => escapeRadius = value; }
+        public float WallAvoidanceRadius { get => wallAvoidanceRadius; set => wallAvoidanceRadius = value; }
         #endregion
         #region softness
         public float EscapeSoftness { get => escapeSoftness; set => escapeSoftness = value; }
         public float SeperationSoftness { get => seperationSoftness; set => seperationSoftness = value; }
+        public float WallSoftness { get => wallSoftness; set => wallSoftness = value; }
         #endregion
         #region rule toggle
         public bool CohesionRule { get => cohesionRule; set => cohesionRule = value; }
@@ -69,6 +77,7 @@ namespace Sheep
         public float FirstCohesionWeight { get => firstCohesionWeight; set => firstCohesionWeight = value; }
         public float FirstSeperationWeight { get => firstSeperationWeight; set => firstSeperationWeight = value; }
         public float FirstAlignmentWeight { get => firstAlignmentWeight; set => firstAlignmentWeight = value; }
+        public float WallAvoidanceWeight { get => wallAvoidanceWeight; set => wallAvoidanceWeight = value; }
         public float EscapeWeight { get => escapeWeight; set => escapeWeight = value; }
         public float SecondCohesionWeight { get => secondCohesionWeight; set => secondCohesionWeight = value; }
         public float SecondSeperationWeight { get => secondSeperationWeight; set => secondSeperationWeight = value; }
@@ -78,6 +87,7 @@ namespace Sheep
         public Transform Predator { get => predator; set => predator = value; }
         public float MaxVelocity { get => maxVelocity; set => maxVelocity = value; }
         public float MinVelocityThreshold { get => minVelocityThreshold; set => minVelocityThreshold = value; }
+        public float TimeToEnterIdle { get => timeToEnterIdle; set => timeToEnterIdle = value; }
         #endregion
 
         private void Start()

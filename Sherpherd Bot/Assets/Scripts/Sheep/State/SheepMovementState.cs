@@ -6,21 +6,15 @@ using UnityEngine;
 
 namespace Sheep
 {
-    public class SheepState : FSMState
-    {
-        protected SheepFlock flock;
-        protected SheepBehaviour sheepBehaviour;
-        protected Transform transform;
-        public SheepState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm)
-        {
-            this.flock = flock;
-            sheepBehaviour = sheep;
-            this.transform = sheep.transform;
-        }
-    }
+}
 
+namespace Sheep
+{
     public class SheepMovementState : SheepState
     {
+
+        private float elapseTime;
+
         public SheepMovementState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
         {
             mId = (int)SheepStates.Movement;
@@ -37,33 +31,49 @@ namespace Sheep
 
         public override void Enter()
         {
+            elapseTime = 0f;
             base.Enter();
         }
 
         public override void Update()
         {
+            CalculateVelocity();
+            MoveSheep();
+            DecidedNextState();
+        }
+
+        private void CalculateVelocity()
+        {
             Vector3 resultantVector = Vector3.zero;
+            //in the paper, there are two multipler that affects the weight
+            //First one affects the overall strength of the flock and the other
+            //one for fine tuneing the strength of the weight
             float secondWeight = CalculateSecondMultipler();
 
             float weightOfCohesion = (flock.FirstCohesionWeight * (1 + secondWeight * flock.SecondCohesionWeight));
             float weightOfAlignment = (flock.FirstAlignmentWeight * (1 + secondWeight * flock.SecondAlignmentWeight));
             float weightOfSeperation = (flock.FirstSeperationWeight * (1 + secondWeight * flock.SecondSeperationWeight));
 
-            var cohesion = CohesionRule();
-            var alignment = AlignmentRule();
-            var seperation = SeperationRule();
-            var escape = EscapeRule();
+            //Afterwards, add all the rules together to get the resultant behaviour
+            resultantVector = weightOfCohesion * CohesionRule() +
+                weightOfAlignment * AlignmentRule() +
+                weightOfSeperation * SeperationRule() +
+                flock.EscapeWeight * EscapeRule() +
+                flock.WallAvoidanceWeight * WallAvoidanceRule();
 
-            //resultantVector = weightOfCohesion * CohesionRule() +
-            //    weightOfAlignment * AlignmentRule() +
-            //    weightOfSeperation * SeperationRule() +
-            //    flock.EscapeWeight * EscapeRule();
+            //for debugging
+            //var cohesion = CohesionRule();
+            //var alignment = AlignmentRule();
+            //var seperation = SeperationRule();
+            //var escape = EscapeRule();
 
-            resultantVector = weightOfCohesion * cohesion +
-             weightOfAlignment * alignment +
-             weightOfSeperation * seperation +
-             flock.EscapeWeight * escape;
+            //resultantVector = weightOfCohesion * cohesion +
+            // weightOfAlignment * alignment +
+            // weightOfSeperation * seperation +
+            // flock.EscapeWeight * escape;
 
+            //if the resultant vector has a great amount of velocity, clamp it
+            //else check if it falls a certain value. If it does, then stop it from moving.
             if (resultantVector.magnitude < flock.MinVelocityThreshold)
             {
                 resultantVector = Vector3.zero;
@@ -74,13 +84,10 @@ namespace Sheep
             }
             sheepBehaviour.ResultantVelocity = resultantVector;
             sheepBehaviour.Velocity = resultantVector;
-
-            MoveSheep();
         }
 
         private void MoveSheep()
         {
-            Debug.Log("moving");
             if (sheepBehaviour.Velocity != Vector3.zero)
             {
                 sheepBehaviour.Velocity.y = 0; //clamp the y value
@@ -93,6 +100,26 @@ namespace Sheep
             }
         }
 
+        private void DecidedNextState()
+        {
+            if(sheepBehaviour.Velocity == Vector3.zero)
+            {
+                //continue the timer
+                elapseTime += Time.deltaTime;
+                if(elapseTime > flock.TimeToEnterIdle)
+                {
+                    //switch to Idle here
+                    mFsm.SetCurrentState((int)SheepStates.Idle);
+                }
+            }
+            else 
+            {
+                //reset the timer
+                elapseTime = 0f;
+            }
+        }
+
+        #region rules
         private Vector3 CohesionRule()
         {
             if (!flock.CohesionRule) return Vector3.zero;
@@ -158,12 +185,31 @@ namespace Sheep
             return direction.normalized * InvSqrt(direction.magnitude * flock.EscapeSoftness);
         }
 
+        private Vector3 WallAvoidanceRule()
+        {
+            Vector3 result = Vector3.zero;
+
+            var wall = Physics.OverlapSphere(transform.position, flock.WallAvoidanceRadius, LayerManager.WallLayer);
+            if (wall.Length == 0) return result;
+
+            foreach(var collider in wall)
+            {
+                var point = collider.ClosestPoint(transform.position);
+                result += transform.position - point;
+            }
+            
+            return result.normalized * InvSqrt(result.magnitude * flock.WallSoftness);
+        }
+        #endregion
+
+        #region functions
         private float CalculateSecondMultipler()
         {
             float distance = Vector3.Distance(flock.Predator.position, transform.position);
             return (float)((1 / Math.PI) * Math.Atan((flock.EscapeRadius - distance) / 20) + 0.5f);
         }
 
+        //inverse sqrt function to calculate certain rules and weights
         private float InvSqrt(float number)
         {
             const float threehalfs = 1.5F;
@@ -186,6 +232,6 @@ namespace Sheep
 
             return y;
         }
-
+        #endregion
     }
 }

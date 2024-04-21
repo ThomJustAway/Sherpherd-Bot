@@ -17,16 +17,15 @@ namespace Sheep
             this.flock = flock;
             fsm = new FSM();
             fsm.Add(new SheepMovementState(fsm, flock, this));
+            fsm.Add(new SheepIdleState(fsm, flock, this));
             fsm.SetCurrentState((int)SheepStates.Movement);
         }
 
         private void Update()
         {
-            if(fsm != null)
-            {
-                fsm.Update();    
-            }
+            fsm.Update();       
         }
+
         private void OnDrawGizmosSelected()
         {
             Vector3 centre = transform.position;
