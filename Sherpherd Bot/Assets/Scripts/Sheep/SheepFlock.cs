@@ -7,16 +7,20 @@ namespace Sheep
     {
         [SerializeField] private float rotationSpeed;
 
+        #region radius
         [Header("for flocking")]
         [SerializeField] private float cohesionRadius;
         [SerializeField] private float seperationRadius;
         [SerializeField] private float alignmentRadius;
         [SerializeField] private float escapeRadius;
         [SerializeField] private float wallAvoidanceRadius;
-
+        #endregion
+        #region softness
         [SerializeField] private float seperationSoftness = 1f;
         [SerializeField] private float escapeSoftness = 10f;
         [SerializeField] private float wallSoftness = 3f;
+        #endregion
+        #region weights
         [Header("Weights")]
         //first weight
         [Range(0,1f)]
@@ -31,28 +35,42 @@ namespace Sheep
         [SerializeField] private float secondCohesionWeight = 1f;
         [SerializeField] private float secondSeperationWeight = 1f;
         [SerializeField] private float secondAlignmentWeight = 1f;
-
+        #endregion
+        #region rules
         [Header("toggle Rules")]
         [SerializeField] private bool cohesionRule;
         [SerializeField] private bool seperationRule;
         [SerializeField] private bool alignmentRule;
         [SerializeField] private bool escapeRule;
-
+        #endregion
         [SerializeField] private float maxVelocity = 6f;
         [SerializeField] private float minVelocityThreshold = 1f;
 
         [Header("Debugging")]
         [SerializeField] private Transform predator;
-
+        #region sheep
         [Header("sheeps")]
         [SerializeField] private BoxCollider bound;
         [SerializeField] private float yOffset;
+        [SerializeField] private float furModelGrowth;
         [SerializeField] private int numberOfSheep;
         [SerializeField] private GameObject sheepPrefab;
-
-        [Header("Exit Timer")]
+        #endregion
+        [Header("Idle")]
         [SerializeField] private float timeToEnterIdle;
 
+        [Header("Eating")]
+        [SerializeField] private float timeToEnterEatStateMin;
+        [SerializeField] private float timeToEnterEatStateMax;
+        [SerializeField] private float timeToEatFinish;
+        [SerializeField] private float eatingRadius;
+
+        [Header("Growth")]
+        [SerializeField] private int foodCost = 5;
+        [SerializeField] private int waterCost = 5;
+        [Range(0, 1)]
+        [SerializeField] private float probabilityOfGrowth = 0.5f;
+        [SerializeField] private float timeGrowth = 10f;
         #region getter
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
         #region radius
@@ -88,6 +106,15 @@ namespace Sheep
         public float MaxVelocity { get => maxVelocity; set => maxVelocity = value; }
         public float MinVelocityThreshold { get => minVelocityThreshold; set => minVelocityThreshold = value; }
         public float TimeToEnterIdle { get => timeToEnterIdle; set => timeToEnterIdle = value; }
+        public float TimeToEatFinish { get => timeToEatFinish; set => timeToEatFinish = value; }
+        public float TimeToEnterEatStateMin { get => timeToEnterEatStateMin; set => timeToEnterEatStateMin = value; }
+        public float TimeToEnterEatStateMax { get => timeToEnterEatStateMax; set => timeToEnterEatStateMax = value; }
+        public float EatingRadius { get => eatingRadius; set => eatingRadius = value; }
+        public int FoodCost { get => foodCost; set => foodCost = value; }
+        public int WaterCost { get => waterCost; set => waterCost = value; }
+        public float ProbabilityOfGrowth { get => probabilityOfGrowth; set => probabilityOfGrowth = value; }
+        public float TimeGrowth { get => timeGrowth; set => timeGrowth = value; }
+        public float FurModelGrowth { get => furModelGrowth; set => furModelGrowth = value; }
         #endregion
 
         private void Start()
@@ -102,7 +129,9 @@ namespace Sheep
                     new Vector3(randX,yOffset,randZ) , 
                     Quaternion.identity,
                     transform);
-                sheep.GetComponent<SheepBehaviour>().Init(this);
+                SheepBehaviour component = sheep.GetComponent<SheepBehaviour>();
+                component.Init(this);
+                component.name = $"sheep {i}";
             }
         }
     }
