@@ -14,7 +14,7 @@ using System;
 
 //    private void Start()
 //    {
-//        EventManager.Instance.AddListener(TypeOfEvent.ShowPopUp, (Action<string, int>)ShowMessage);
+//        EventManager.Instance.AddListener(TypeOfEvent.ShowPopUp, (AgentActions<string, int>)ShowMessage);
 //    }
 
 //    public void ShowMessage(string message, int duration)

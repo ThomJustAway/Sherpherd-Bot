@@ -71,6 +71,11 @@ namespace Sheep
         [Range(0, 1)]
         [SerializeField] private float probabilityOfGrowth = 0.5f;
         [SerializeField] private float timeGrowth = 10f;
+
+        //global information
+        public SheepBehaviour[] Sheeps { get; private set; }
+        public float flockFood { get; private set; }
+        public float flockWater { get; private set; }
         #region getter
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
         #region radius
@@ -106,21 +111,28 @@ namespace Sheep
         public float MaxVelocity { get => maxVelocity; set => maxVelocity = value; }
         public float MinVelocityThreshold { get => minVelocityThreshold; set => minVelocityThreshold = value; }
         public float TimeToEnterIdle { get => timeToEnterIdle; set => timeToEnterIdle = value; }
+        #region sheep eating
         public float TimeToEatFinish { get => timeToEatFinish; set => timeToEatFinish = value; }
         public float TimeToEnterEatStateMin { get => timeToEnterEatStateMin; set => timeToEnterEatStateMin = value; }
         public float TimeToEnterEatStateMax { get => timeToEnterEatStateMax; set => timeToEnterEatStateMax = value; }
         public float EatingRadius { get => eatingRadius; set => eatingRadius = value; }
         public int FoodCost { get => foodCost; set => foodCost = value; }
+        #endregion
         public int WaterCost { get => waterCost; set => waterCost = value; }
+        #region fur growth 
         public float ProbabilityOfGrowth { get => probabilityOfGrowth; set => probabilityOfGrowth = value; }
         public float TimeGrowth { get => timeGrowth; set => timeGrowth = value; }
         public float FurModelGrowth { get => furModelGrowth; set => furModelGrowth = value; }
+        #endregion
+        
+
+        public Vector3 CG { get; private set; }
         #endregion
 
         private void Start()
         {
             Predator = GameObject.FindGameObjectWithTag("Predator").transform;
-
+            Sheeps = new SheepBehaviour[numberOfSheep];
             for(int i = 0; i < numberOfSheep ; i++)
             {
                 float randX = Random.Range(bound.bounds.min.x, bound.bounds.max.x);
@@ -132,9 +144,34 @@ namespace Sheep
                 SheepBehaviour component = sheep.GetComponent<SheepBehaviour>();
                 component.Init(this);
                 component.name = $"sheep {i}";
+                //populating the sheeps
+                Sheeps[i] = component;
             }
         }
+
+        private void Update()
+        {
+            CalculateFlockData();
+        }
+
+        private void CalculateFlockData()
+        {
+            float saturationLevel = 0f;
+            float hydrationLevel = 0f;
+            Vector3 val = Vector3.zero;
+            foreach(var t in Sheeps)
+            {
+                val += t.transform.position;
+                saturationLevel += t.Food;
+                hydrationLevel += t.Water;
+            }
+            CG = val / Sheeps.Length;
+            flockFood = saturationLevel / Sheeps.Length;
+            flockWater = hydrationLevel / Sheeps.Length;
+        }
     }
+
+    
 
     public enum SheepStates
     {

@@ -49,7 +49,7 @@ namespace PGGE
 			public virtual void Exit() { }
 
 			/*!Virtual method that will be 
-             * called in every Update call from Unity.
+             * called in every NormalUpdate call from Unity.
              * The call will be routed via the
              * FSM through the current state.
              */
