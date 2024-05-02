@@ -64,6 +64,8 @@ namespace OriginalGOAP
         readonly NavMeshAgent agent;
         readonly float wanderRadius;
     
+
+
         public bool CanPerform => !Complete;
         public bool Complete => agent.remainingDistance <= 2f && !agent.pathPending;
     

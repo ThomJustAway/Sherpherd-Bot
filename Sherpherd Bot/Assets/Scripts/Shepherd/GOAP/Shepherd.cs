@@ -1,4 +1,5 @@
-﻿using GOAPTHOM;
+﻿using Data_control;
+using GOAPTHOM;
 using Sheep;
 using System;
 using System.Collections;
@@ -15,13 +16,20 @@ namespace Assets.Scripts.Shepherd.GOAP
         //values
         [SerializeField] SheepFlock flock;
 
+        [SerializeField] private float movingSpeed;
+        [SerializeField] private float rotationSpeed;
         public Transform GrassPosition { get; private set; }
         public Transform WaterPosition {get; private set; }
-        
+        public float WanderingRadius { get => wanderingRadius; set => wanderingRadius = value; }
+        public float MovingSpeed { get => movingSpeed; set => movingSpeed = value; }
+        public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
+
+        [Header("feeding")]
         [SerializeField] private float grassAndWaterAcceptableRange;
         [SerializeField] private float acceptableFoodLevel;
         [SerializeField] private float acceptableWaterLevel;
 
+        [SerializeField] private float wanderingRadius;
 
         private void Start ()
         {
@@ -81,8 +89,9 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .Builder(Actions.WanderAround)
                 .AddEffect(Beliefs.FoundFoodSource, beliefs)
                 .AddEffect(Beliefs.FoundWatersource ,beliefs)
-                .WithStrategy()
+                .WithStrategy(new SearchStrategy(this))
                 .Build());
+            
 
 
             return actions;
@@ -92,6 +101,21 @@ namespace Assets.Scripts.Shepherd.GOAP
         {
             var goals = new HashSet<AgentGoal>();
             return goals;
+        }
+
+        //will check if it is a water or a food
+        private void OnCollisionEnter(Collision collision)
+        {
+            //sense for collision for water and food.
+            if(collision.collider.gameObject.layer == LayerManager.GrassPatchLayer)
+            {
+                //that means that it is a grass patch
+                GrassPosition = collision.transform;
+            }
+            else if(collision.collider.gameObject.layer == LayerManager.WaterPatchLayer)
+            {
+                WaterPosition = collision.transform;
+            }
         }
     }
 }
