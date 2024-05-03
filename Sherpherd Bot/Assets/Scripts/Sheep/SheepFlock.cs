@@ -127,6 +127,7 @@ namespace Sheep
         
 
         public Vector3 CG { get; private set; }
+        public float YOffset { get => yOffset; set => yOffset = value; }
         #endregion
 
         private void Start()
@@ -168,6 +169,12 @@ namespace Sheep
             CG = val / Sheeps.Length;
             flockFood = saturationLevel / Sheeps.Length;
             flockWater = hydrationLevel / Sheeps.Length;
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(CG, 1.5f);
         }
     }
 

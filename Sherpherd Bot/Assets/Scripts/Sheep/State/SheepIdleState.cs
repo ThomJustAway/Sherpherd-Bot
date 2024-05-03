@@ -24,7 +24,7 @@ namespace Sheep
 
         public override void Update()
         {
-            Debug.Log($"{sheepBehaviour.name} "+ "Idle");
+            //Debug.Log($"{sheepBehaviour.name} "+ "Idle");
             SenseDog();
             SenseEating();
             DetermineFurGrowth();

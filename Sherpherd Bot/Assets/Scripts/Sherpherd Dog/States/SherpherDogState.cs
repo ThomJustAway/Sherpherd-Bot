@@ -11,6 +11,7 @@ namespace sherpherdDog
         public SherpherDogState(FSM fsm , ShepherdDog dog) : base(fsm)
         {
             this.dog = dog;
+            transform = dog.transform;
         }
     }
 }

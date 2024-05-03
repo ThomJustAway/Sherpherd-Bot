@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 24281473}
   - component: {fileID: 24281472}
   - component: {fileID: 24281471}
+  - component: {fileID: 24281475}
   m_Layer: 7
   m_Name: Sherpherd Dog
   m_TagString: Predator
@@ -222,12 +223,33 @@ Transform:
   m_GameObject: {fileID: 24281470}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.6, y: 1.15, z: -66.3}
+  m_LocalPosition: {x: -5.2, y: 1.15, z: -74.9}
   m_LocalScale: {x: 1.8519014, y: 1.8519014, z: 1.8519014}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &24281475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24281470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fff85c6bb7fc2d741b58a5a316559cfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minSpeed: 1
+  maxSpeed: 14
+  rotationSpeed: 10
+  flockData: {fileID: 1137874197}
+  senseRadius: 30
+  collectionOffset: 12
+  drivingOffset: 6
+  targetRadius: 13
+  target: {fileID: 1187498783}
 --- !u!1 &203100962
 GameObject:
   m_ObjectHideFlags: 0
@@ -803,6 +825,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1187498783 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4894127388560330095, guid: 064ba6fa69aefc44abca00a2441fafba, type: 3}
+  m_PrefabInstance: {fileID: 2942958148503649545}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1241336657
 GameObject:
   m_ObjectHideFlags: 0
@@ -920,7 +947,7 @@ Transform:
   m_GameObject: {fileID: 1272720369}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 21.7, y: 0.88, z: -68.3}
+  m_LocalPosition: {x: 24.1, y: 0.88, z: -85.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
