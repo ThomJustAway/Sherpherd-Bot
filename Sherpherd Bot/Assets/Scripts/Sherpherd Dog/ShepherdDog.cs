@@ -22,6 +22,11 @@ namespace sherpherdDog
         [SerializeField] private float collectionOffset = 2f;
         [SerializeField] private float drivingOffset = 2f;
         [SerializeField] private float targetRadius = 6f;
+        [SerializeField] private float gatheringMultiplier = 1.3f;
+
+        [SerializeField] private float collectingAvoidanceSheep = 1f;
+        [Range(0,25)]
+        [SerializeField] private float angleOfAvoidance = 5;
         [Header("Debugging")]
         [ContextMenuItem("Move Sheeps to target",nameof(ChaseSheeps))]
         [SerializeField]private Transform target;
@@ -38,6 +43,11 @@ namespace sherpherdDog
         public float MaxSpeed { get => maxSpeed; set => maxSpeed = value; }
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
         public Vector3 TargetPoint { get => targetPoint; }
+
+        public float GatheringRadius { get { return flockData.CohesionRadius * gatheringMultiplier; } }
+
+        public float CollectingAvoidanceSheep { get => collectingAvoidanceSheep; set => collectingAvoidanceSheep = value; }
+        public float AngleOfAvoidance { get => angleOfAvoidance; set => angleOfAvoidance = value; }
 
         private void Start()
         {
@@ -65,7 +75,8 @@ namespace sherpherdDog
             Gizmos.DrawWireSphere(transform.position, SenseRadius);
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(targetPoint, targetRadius);
-            
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(flockData.CG, GatheringRadius);
         }
 
     }

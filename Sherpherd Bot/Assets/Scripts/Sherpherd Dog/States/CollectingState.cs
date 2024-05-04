@@ -1,5 +1,7 @@
-﻿using PGGE.Patterns;
+﻿using Data_control;
+using PGGE.Patterns;
 using Sheep;
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
@@ -30,7 +32,7 @@ namespace sherpherdDog
         //check condition first
         private void CheckCanDrive()
         {
-            if(flock.Sheeps.All(sheep => Vector3.Distance(sheep.transform.position, flock.CG) <= flock.CohesionRadius))
+            if(flock.Sheeps.All(sheep => Vector3.Distance(sheep.transform.position, flock.CG) <= dog.GatheringRadius))
             {//if all teh sheep are within cohesion radius from the point of CG. the dog should be able to push it.
                 mFsm.SetCurrentState((int)DogState.Driving);
                 return;
@@ -41,7 +43,7 @@ namespace sherpherdDog
         private void SearchClosestSheep()
         {
             var targetSheeps = flock.Sheeps
-                .Where(sheep => Vector3.Distance(sheep.transform.position, flock.CG) > flock.CohesionRadius)
+                .Where(sheep => Vector3.Distance(sheep.transform.position, flock.CG) > dog.GatheringRadius)
                 .ToArray();
             //get all the sheeps that are out of place
             SheepBehaviour sheepChosen = targetSheeps[0];
@@ -75,10 +77,75 @@ namespace sherpherdDog
 
             //move the dog to the position
             var targetDirection = (targetPoint - dog.transform.position).normalized;
-            //get the target point to arrive
+            //add rules to avoid walls, other sheeps and not scare the other sheep
+
             transform.position += targetDirection * dog.MaxSpeed * Time.deltaTime;
             transform.rotation = Quaternion.LookRotation(targetDirection);
         }
+
+
+        private Vector3 AvoidOtherSheepsRule()
+        {
+            Vector3 result = Vector3.zero;
+            var sheeps = Physics.OverlapSphere(transform.position, dog.SenseRadius, LayerManager.SheepLayer)
+                .Where(sheep => Vector3.Distance(sheep.transform.position, sheepChosen.transform.position) > flock.CohesionRadius)
+                .ToArray();
+            //find all the sheeps in the area and omit those are near the sheep chosen .
+            
+            if(sheeps.Length == 0) return result;
+
+            foreach(var sheep in sheeps) 
+            {
+                if (sheep.transform == sheepChosen.transform) continue;
+                var direction = (transform.position - sheep.transform.position);
+                //will try to avoid the sheeps that are good.
+                result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheep);
+            }
+
+            return result;
+        }
+
+        private Vector3 AvoidScaringSheepRule()
+        {
+            //will need to check the angle
+            var targetDirectionToCG = flock.CG - sheepChosenPosition;
+            var directionCurrently = sheepChosenPosition - transform.position;
+            //if the angle are closely align then ignore this rule and scare the sheep.
+            if (Vector3.Angle(targetDirectionToCG, directionCurrently) < dog.AngleOfAvoidance)
+                return Vector3.zero;
+
+            //else try to avoid scaring the sheep and the neighbour around it.
+            Vector3 resultantVector = Vector3.zero;
+            var sheepsToAvoid = Physics.OverlapSphere(sheepChosenPosition, flock.CohesionRadius, LayerManager.SheepLayer);
+            foreach(var sheep in sheepsToAvoid)
+            {
+                resultantVector
+            }
+        }
+
+        private float InvSqrt(float number)
+        {
+            const float threehalfs = 1.5F;
+
+            float x2 = number * 0.5F;
+            float y = number;
+
+            // evil floating point bit level hacking
+            uint i = BitConverter.ToUInt32(BitConverter.GetBytes(y), 0);
+
+            // value is pre-assumed
+            i = 0x5f3759df - (i >> 1);
+            y = BitConverter.ToSingle(BitConverter.GetBytes(i), 0);
+
+            // 1st iteration
+            y = y * (threehalfs - (x2 * y * y));
+
+            // 2nd iteration, this can be removed
+            // y = y * ( threehalfs - ( x2 * y * y ) );
+
+            return y;
+        }
+
     }
     public class DrivingState : SherpherDogState
     {
@@ -100,7 +167,7 @@ namespace sherpherdDog
         void CheckCanCollect()
         {
             //if there are any misalign sheep, make sure to go back to collecting to realign them back
-            if (flock.Sheeps.Any(sheep => Vector3.Distance(sheep.transform.position, flock.CG) > flock.CohesionRadius))
+            if (flock.Sheeps.Any(sheep => Vector3.Distance(sheep.transform.position, flock.CG) > dog.GatheringRadius))
             {
                 mFsm.SetCurrentState((int)DogState.Collecting);
                 return;

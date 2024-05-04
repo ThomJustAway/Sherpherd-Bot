@@ -245,10 +245,11 @@ MonoBehaviour:
   maxSpeed: 14
   rotationSpeed: 10
   flockData: {fileID: 1137874197}
-  senseRadius: 30
+  senseRadius: 27.4
   collectionOffset: 12
   drivingOffset: 6
   targetRadius: 13
+  gatheringMultiplier: 2
   target: {fileID: 1187498783}
 --- !u!1 &203100962
 GameObject:

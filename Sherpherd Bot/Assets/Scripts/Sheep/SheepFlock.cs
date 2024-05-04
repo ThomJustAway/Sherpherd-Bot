@@ -175,6 +175,7 @@ namespace Sheep
         {
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(CG, 1.5f);
+            
         }
     }
 
