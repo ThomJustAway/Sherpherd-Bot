@@ -17,12 +17,12 @@ namespace sherpherdDog
         private SheepBehaviour sheepChosen;
         private SheepFlock flock;
         private Vector3 sheepChosenPosition { get { return sheepChosen?.transform.position ?? Vector3.zero; } }
+        Vector3 targetPoint;
         public CollectingState(FSM fsm, ShepherdDog dog , SheepFlock flock) : base(fsm, dog)
         {
             mId = (int)DogState.Collecting;
             this.flock = flock;
         }
-
         public override void Enter()
         {
             CheckCanDrive();
@@ -66,23 +66,48 @@ namespace sherpherdDog
 
         public override void Update()
         {
+            //problem: the sheep would also move in too close to the target point,
+            //as a result, it would move back. this cause it to move back and forth until the 
+            //chosen sheep starts to move
             if (Vector3.Distance(sheepChosenPosition , flock.CG) < flock.CohesionRadius)
             {
                 //if under cohesion radius, check if there are any other sheep that needs to be collected
                 CheckCanDrive();
             }
             //Find the position that allows the chosen sheep to be push to the flock.
-            var targetPoint = (((sheepChosenPosition - flock.CG).normalized * dog.DrivingOffset) + sheepChosenPosition)
+            targetPoint = (((sheepChosenPosition - flock.CG).normalized * dog.CollectionOffset) + sheepChosenPosition)
                 .With(y: flock.YOffset);
 
-            //move the dog to the position
-            var targetDirection = (targetPoint - dog.transform.position).normalized;
+            
+            
+            Vector3 targetMovement = (targetPoint - dog.transform.position).normalized;
+
+            //Vector3 resultantMovement = targetMovement * dog.WeightOfTarget +
+            //    //AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep +
+            //    AvoidScaringSheepRule() * dog.WeightOfAvoidanceFromChosenSheep;
             //add rules to avoid walls, other sheeps and not scare the other sheep
 
-            transform.position += targetDirection * dog.MaxSpeed * Time.deltaTime;
-            transform.rotation = Quaternion.LookRotation(targetDirection);
-        }
+            //for debugging
+            targetMovement *= dog.WeightOfTarget;
+            var avoidScaringSheepDirection = AvoidScaringSheepRule() * dog.WeightOfAvoidanceFromChosenSheep;
+            var avoidOtherSheepDirection = AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep;
+            Vector3 resultantMovement = targetMovement + 
+                avoidScaringSheepDirection +
+                avoidOtherSheepDirection;
 
+
+            Debug.DrawRay(transform.position, targetMovement, Color.yellow);
+            Debug.DrawRay(transform.position, avoidScaringSheepDirection, Color.red);
+            Debug.DrawRay(transform.position, avoidOtherSheepDirection, Color.black);
+            Debug.DrawLine(transform.position, targetPoint, Color.white);
+            //Vector3 resultantMovement = targetMovement * dog.WeightOfTarget +
+            //    //AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep +
+            //    AvoidScaringSheepRule() * dog.WeightOfAvoidanceFromChosenSheep;
+
+
+            transform.position +=  resultantMovement.normalized * dog.MaxSpeed * Time.deltaTime;
+            transform.rotation = Quaternion.LookRotation(targetMovement);
+        }
 
         private Vector3 AvoidOtherSheepsRule()
         {
@@ -96,10 +121,9 @@ namespace sherpherdDog
 
             foreach(var sheep in sheeps) 
             {
-                if (sheep.transform == sheepChosen.transform) continue;
                 var direction = (transform.position - sheep.transform.position);
                 //will try to avoid the sheeps that are good.
-                result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheep);
+                result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheepValue);
             }
 
             return result;
@@ -108,19 +132,28 @@ namespace sherpherdDog
         private Vector3 AvoidScaringSheepRule()
         {
             //will need to check the angle
-            var targetDirectionToCG = flock.CG - sheepChosenPosition;
+            var targetDirectionToCG = flock.CG - targetPoint;
             var directionCurrently = sheepChosenPosition - transform.position;
             //if the angle are closely align then ignore this rule and scare the sheep.
-            if (Vector3.Angle(targetDirectionToCG, directionCurrently) < dog.AngleOfAvoidance)
+            bool isAngleCorrect = Vector3.Angle(targetDirectionToCG, directionCurrently) < dog.AngleOfAvoidance;
+            bool isNearTheSheep = Vector3.Distance(sheepChosenPosition, transform.position) > flock.EscapeRadius;
+
+            Debug.Log($"Is angle good? {isAngleCorrect}");
+
+            if (isNearTheSheep || isAngleCorrect)
                 return Vector3.zero;
 
             //else try to avoid scaring the sheep and the neighbour around it.
-            Vector3 resultantVector = Vector3.zero;
+            Vector3 result = Vector3.zero;
             var sheepsToAvoid = Physics.OverlapSphere(sheepChosenPosition, flock.CohesionRadius, LayerManager.SheepLayer);
             foreach(var sheep in sheepsToAvoid)
             {
-                resultantVector
+                var direction = (transform.position - sheep.transform.position);
+                //will try to avoid the sheeps that are good.
+                result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheepValue);
             }
+
+            return result;
         }
 
         private float InvSqrt(float number)
@@ -189,7 +222,7 @@ namespace sherpherdDog
             CheckReachTarget();
             //find target point to push the flock to target position
             //problem here
-            var targetPoint = ((flock.CG - transform.position).normalized * dog.DrivingOffset + transform.position)
+            var targetPoint = ((flock.CG - dog.TargetPoint).normalized * dog.DrivingOffset + flock.CG)
                 .With(y: flock.YOffset);
             Debug.DrawLine(transform.position, targetPoint, Color.blue);
             var targetDirection = (targetPoint - dog.transform.position).normalized;

@@ -27,6 +27,10 @@ namespace sherpherdDog
         [SerializeField] private float collectingAvoidanceSheep = 1f;
         [Range(0,25)]
         [SerializeField] private float angleOfAvoidance = 5;
+        [SerializeField] private float weightOfTarget = 1f;
+        [SerializeField] private float weightOfAvoidanceOfOtherSheep = 1f;
+        [SerializeField] private float weightOfAvoidanceFromChosenSheep = 1f;
+        [SerializeField] private float collectionCorrectionError = 2f;
         [Header("Debugging")]
         [ContextMenuItem("Move Sheeps to target",nameof(ChaseSheeps))]
         [SerializeField]private Transform target;
@@ -46,8 +50,12 @@ namespace sherpherdDog
 
         public float GatheringRadius { get { return flockData.CohesionRadius * gatheringMultiplier; } }
 
-        public float CollectingAvoidanceSheep { get => collectingAvoidanceSheep; set => collectingAvoidanceSheep = value; }
+        public float CollectingAvoidanceSheepValue { get => collectingAvoidanceSheep; set => collectingAvoidanceSheep = value; }
         public float AngleOfAvoidance { get => angleOfAvoidance; set => angleOfAvoidance = value; }
+        public float WeightOfTarget { get => weightOfTarget; set => weightOfTarget = value; }
+        public float WeightOfAvoidanceOfOtherSheep { get => weightOfAvoidanceOfOtherSheep; set => weightOfAvoidanceOfOtherSheep = value; }
+        public float WeightOfAvoidanceFromChosenSheep { get => weightOfAvoidanceFromChosenSheep; set => weightOfAvoidanceFromChosenSheep = value; }
+        public float CollectionCorrectionError { get => collectionCorrectionError; set => collectionCorrectionError = value; }
 
         private void Start()
         {

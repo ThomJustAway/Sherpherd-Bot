@@ -247,9 +247,15 @@ MonoBehaviour:
   flockData: {fileID: 1137874197}
   senseRadius: 27.4
   collectionOffset: 12
-  drivingOffset: 6
-  targetRadius: 13
-  gatheringMultiplier: 2
+  drivingOffset: 18.8
+  targetRadius: 9
+  gatheringMultiplier: 1.1
+  collectingAvoidanceSheep: 0.1
+  angleOfAvoidance: 19
+  weightOfTarget: 4.01
+  weightOfAvoidanceOfOtherSheep: 3
+  weightOfAvoidanceFromChosenSheep: 4
+  collectionCorrectionError: 2
   target: {fileID: 1187498783}
 --- !u!1 &203100962
 GameObject:
@@ -777,7 +783,7 @@ MonoBehaviour:
   cohesionRadius: 13.6
   seperationRadius: 5.21
   alignmentRadius: 6
-  escapeRadius: 17.4
+  escapeRadius: 25
   wallAvoidanceRadius: 10
   seperationSoftness: 0.87
   escapeSoftness: 10
