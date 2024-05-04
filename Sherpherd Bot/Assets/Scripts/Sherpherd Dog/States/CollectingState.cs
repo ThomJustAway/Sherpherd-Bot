@@ -90,10 +90,10 @@ namespace sherpherdDog
             //for debugging
             targetMovement *= dog.WeightOfTarget;
             var avoidScaringSheepDirection = AvoidScaringSheepRule() * dog.WeightOfAvoidanceFromChosenSheep;
-            var avoidOtherSheepDirection = AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep;
-            Vector3 resultantMovement = targetMovement + 
-                avoidScaringSheepDirection +
-                avoidOtherSheepDirection;
+            //var avoidOtherSheepDirection = AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep;
+            Vector3 resultantMovement = targetMovement +
+                avoidScaringSheepDirection;/* +*/
+                //avoidOtherSheepDirection;
 
 
             Debug.DrawRay(transform.position, targetMovement, Color.yellow);
@@ -109,25 +109,25 @@ namespace sherpherdDog
             transform.rotation = Quaternion.LookRotation(targetMovement);
         }
 
-        private Vector3 AvoidOtherSheepsRule()
-        {
-            Vector3 result = Vector3.zero;
-            var sheeps = Physics.OverlapSphere(transform.position, dog.SenseRadius, LayerManager.SheepLayer)
-                .Where(sheep => Vector3.Distance(sheep.transform.position, sheepChosen.transform.position) > flock.CohesionRadius)
-                .ToArray();
-            //find all the sheeps in the area and omit those are near the sheep chosen .
+        //private Vector3 AvoidOtherSheepsRule()
+        //{
+        //    Vector3 result = Vector3.zero;
+        //    var sheeps = Physics.OverlapSphere(transform.position, dog.SenseRadius, LayerManager.SheepLayer)
+        //        .Where(sheep => Vector3.Distance(sheep.transform.position, sheepChosen.transform.position) > flock.CohesionRadius)
+        //        .ToArray();
+        //    //find all the sheeps in the area and omit those are near the sheep chosen .
             
-            if(sheeps.Length == 0) return result;
+        //    if(sheeps.Length == 0) return result;
 
-            foreach(var sheep in sheeps) 
-            {
-                var direction = (transform.position - sheep.transform.position);
-                //will try to avoid the sheeps that are good.
-                result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheepValue);
-            }
+        //    foreach(var sheep in sheeps) 
+        //    {
+        //        var direction = (transform.position - sheep.transform.position);
+        //        //will try to avoid the sheeps that are good.
+        //        result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheepValue);
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
 
         private Vector3 AvoidScaringSheepRule()
         {
@@ -180,6 +180,8 @@ namespace sherpherdDog
         }
 
     }
+
+    //todo add driving to the dog
     public class DrivingState : SherpherDogState
     {
         //Gathering is when the dog would push all the 
@@ -230,6 +232,26 @@ namespace sherpherdDog
             transform.position += targetDirection * dog.MaxSpeed * Time.deltaTime;
             transform.rotation = Quaternion.LookRotation(targetDirection);
         }
+
+        private Vector3 AvoidOtherSheepsRule()
+        {
+            Vector3 result = Vector3.zero;
+            var sheeps = Physics.OverlapSphere(transform.position, dog.SenseRadius, LayerManager.SheepLayer)
+                .ToArray();
+            //find all the sheeps in the area and omit those are near the sheep chosen .
+
+            if (sheeps.Length == 0) return result;
+
+            foreach (var sheep in sheeps)
+            {
+                var direction = (transform.position - sheep.transform.position);
+                //will try to avoid the sheeps that are good.
+                result += direction.normalized * InvSqrt(direction.magnitude * dog.CollectingAvoidanceSheepValue);
+            }
+
+            return result;
+        }
+
     }
 
     public class ListeningState : SherpherDogState

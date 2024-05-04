@@ -786,12 +786,12 @@ MonoBehaviour:
   escapeRadius: 25
   wallAvoidanceRadius: 10
   seperationSoftness: 0.87
-  escapeSoftness: 10
+  escapeSoftness: 7.37
   wallSoftness: 3
   firstCohesionWeight: 0.544
   firstSeperationWeight: 0.799
   firstAlignmentWeight: 0.51
-  escapeWeight: 10.86
+  escapeWeight: 11.1
   wallAvoidanceWeight: 8.81
   secondCohesionWeight: 1.39
   secondSeperationWeight: 4.5
