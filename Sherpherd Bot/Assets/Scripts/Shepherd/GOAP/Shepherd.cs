@@ -47,6 +47,11 @@ namespace Assets.Scripts.Shepherd.GOAP
             agent.updateFunction();
         }
 
+
+        private bool InWithinLocation(Vector3 targetPos, Vector3 posToCheck, float radius)
+        {
+            return Vector3.Distance(targetPos, posToCheck) < radius;
+        }
         private Dictionary<string,AgentBelief> CreatingBelief()
         {
             var beliefs = new Dictionary<string,AgentBelief>();
@@ -70,11 +75,6 @@ namespace Assets.Scripts.Shepherd.GOAP
             return beliefs;
         }
 
-        private bool InWithinLocation(Vector3 targetPos, Vector3 posToCheck, float radius)
-        {
-            return Vector3.Distance(targetPos, posToCheck) < radius;
-        }
-
         private HashSet<AgentAction> CreatingActions()
         {
             var actions = new HashSet<AgentAction>();
@@ -91,7 +91,7 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .AddEffect(Beliefs.FoundWatersource ,beliefs)
                 .WithStrategy(new SearchStrategy(this))
                 .Build());
-            
+
 
 
             return actions;

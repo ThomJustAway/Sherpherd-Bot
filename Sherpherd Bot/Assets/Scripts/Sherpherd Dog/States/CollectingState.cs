@@ -98,7 +98,6 @@ namespace sherpherdDog
 
             Debug.DrawRay(transform.position, targetMovement, Color.yellow);
             Debug.DrawRay(transform.position, avoidScaringSheepDirection, Color.red);
-            Debug.DrawRay(transform.position, avoidOtherSheepDirection, Color.black);
             Debug.DrawLine(transform.position, targetPoint, Color.white);
             //Vector3 resultantMovement = targetMovement * dog.WeightOfTarget +
             //    //AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep +
@@ -228,8 +227,9 @@ namespace sherpherdDog
                 .With(y: flock.YOffset);
             Debug.DrawLine(transform.position, targetPoint, Color.blue);
             var targetDirection = (targetPoint - dog.transform.position).normalized;
+            var resultantVector = targetDirection * dog.WeightOfTarget + AvoidOtherSheepsRule() * dog.WeightOfAvoidanceOfOtherSheep;
             //get the target point to arrive
-            transform.position += targetDirection * dog.MaxSpeed * Time.deltaTime;
+            transform.position += resultantVector.normalized * dog.MaxSpeed * Time.deltaTime;
             transform.rotation = Quaternion.LookRotation(targetDirection);
         }
 
@@ -250,6 +250,28 @@ namespace sherpherdDog
             }
 
             return result;
+        }
+        private float InvSqrt(float number)
+        {
+            const float threehalfs = 1.5F;
+
+            float x2 = number * 0.5F;
+            float y = number;
+
+            // evil floating point bit level hacking
+            uint i = BitConverter.ToUInt32(BitConverter.GetBytes(y), 0);
+
+            // value is pre-assumed
+            i = 0x5f3759df - (i >> 1);
+            y = BitConverter.ToSingle(BitConverter.GetBytes(i), 0);
+
+            // 1st iteration
+            y = y * (threehalfs - (x2 * y * y));
+
+            // 2nd iteration, this can be removed
+            // y = y * ( threehalfs - ( x2 * y * y ) );
+
+            return y;
         }
 
     }
