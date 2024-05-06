@@ -52,7 +52,7 @@ namespace Sheep
         {
             if(Vector3.Distance(flock.Predator.transform.position, transform.position) <= flock.EscapeRadius) 
             { 
-                mFsm.SetCurrentState((int)SheepStates.Movement);
+                mFsm.SetCurrentState((int)SheepStates.Flocking);
             }
         }
 

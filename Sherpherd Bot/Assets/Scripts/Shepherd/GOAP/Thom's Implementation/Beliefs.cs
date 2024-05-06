@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace GOAPTHOM
@@ -28,7 +29,7 @@ namespace GOAPTHOM
 
         public void AddBelief(Beliefs key, Func<bool> condition)
         {
-            string name = nameof(key);
+            string name = key.ToString();
             beliefs.Add(name, new AgentBelief.Builder(name)
                 .WithCondition(condition)
                 .Build());

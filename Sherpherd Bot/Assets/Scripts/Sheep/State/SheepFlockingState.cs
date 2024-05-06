@@ -10,21 +10,21 @@ namespace Sheep
 
 namespace Sheep
 {
-    public class SheepMovementState : SheepState
+    public class SheepFlockingState : SheepState
     {
 
         private float elapseTime;
 
-        public SheepMovementState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
+        public SheepFlockingState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
         {
-            mId = (int)SheepStates.Movement;
+            mId = (int)SheepStates.Flocking;
         }
 
         //this is all reference in http://www.diva-portal.org/smash/get/diva2:675990/FULLTEXT01.pdf
 
-        //public SheepMovementState(FSM fsm, SheepFlock sheep) : base(fsm, sheep)
+        //public SheepFlockingState(FSM fsm, SheepFlock sheep) : base(fsm, sheep)
         //{
-        //    mId = (int) SheepStates.Movement;
+        //    mId = (int) SheepStates.Flocking;
         //}
 
         //will do wondering or roaming around.

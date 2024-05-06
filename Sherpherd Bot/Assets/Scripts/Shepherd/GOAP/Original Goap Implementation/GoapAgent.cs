@@ -42,7 +42,6 @@ namespace OriginalGOAP
 
         [Inject] GoapFactory gFactory;
         IGoapPlanner gPlanner;
-
         void Awake()
         {
             navMeshAgent = GetComponent<NavMeshAgent>();

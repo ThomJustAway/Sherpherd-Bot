@@ -27,12 +27,8 @@ namespace GOAPTHOM
 
             public Builder(Goal goalEnum)
             {
-                goal = new AgentGoal(nameof(goalEnum));
-            }
-
-            public Builder(Beliefs belief) 
-            {
-                goal = new AgentGoal(nameof(belief));
+                string name = goalEnum.ToString();
+                goal = new AgentGoal(name);
             }
 
             public Builder WithPriority(float priority)
@@ -44,6 +40,13 @@ namespace GOAPTHOM
             public Builder WithDesiredEffect(AgentBelief effect)
             {
                 goal.DesiredEffects.Add(effect);
+                return this;
+            }
+
+            public Builder WithDesiredEffect(Beliefs belief, Dictionary<string, AgentBelief> dict)
+            {
+                string name = belief.ToString();
+                goal.DesiredEffects.Add(dict[name]);
                 return this;
             }
 

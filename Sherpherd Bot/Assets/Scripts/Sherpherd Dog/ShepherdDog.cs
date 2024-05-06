@@ -62,12 +62,12 @@ namespace sherpherdDog
             fsm.Add(new CollectingState(fsm, this, flockData));
             fsm.Add(new DrivingState(fsm, this, flockData));
             fsm.Add(new ListeningState(fsm, this));
-            fsm.SetCurrentState((int)DogState.Collecting);
+            fsm.SetCurrentState((int)DogState.ListeningState);
         }
 
         private void Update()
         {
-            print($"dog at {(DogState)fsm.GetCurrentState().ID}");
+            //print($"dog at {(DogState)fsm.GetCurrentState().ID}");
             fsm.Update();
         }
 

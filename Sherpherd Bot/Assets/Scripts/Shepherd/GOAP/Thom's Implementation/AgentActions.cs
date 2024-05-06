@@ -1,4 +1,5 @@
 ﻿using OriginalGOAP;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -58,7 +59,8 @@ namespace GOAPTHOM
 
             public Builder(Actions actionName)
             {
-                action = new AgentAction(nameof(actionName))
+                string name = actionName.ToString();
+                action = new AgentAction(name)
                 {
                     Cost = 1
                 };
@@ -82,6 +84,14 @@ namespace GOAPTHOM
                 return this;
             }
 
+            public Builder AddPrecondition(Beliefs belief, Dictionary<string, AgentBelief> dictionary)
+            {
+                string name = belief.ToString();
+                action.Preconditions.Add(dictionary[name]);
+                return this;
+            }
+
+
             public Builder AddEffect(AgentBelief effect)
             {
                 action.Effects.Add(effect);
@@ -90,7 +100,8 @@ namespace GOAPTHOM
 
             public Builder AddEffect(Beliefs belief , Dictionary<string, AgentBelief> dictionary)
             {
-                action.Effects.Add(dictionary[nameof(belief)]);
+                string name = belief.ToString();
+                action.Effects.Add(dictionary[name]);
                 return this;
             }
 

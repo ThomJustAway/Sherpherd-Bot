@@ -253,9 +253,53 @@ MonoBehaviour:
   collectingAvoidanceSheep: 0.1
   angleOfAvoidance: 19
   weightOfTarget: 4.01
-  weightOfAvoidanceOfOtherSheep: 3
+  weightOfAvoidanceOfOtherSheep: 1
   weightOfAvoidanceFromChosenSheep: 4
   target: {fileID: 1187498783}
+--- !u!1 &52877042
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 52877044}
+  - component: {fileID: 52877043}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &52877043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52877042}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfaf3eec77730e46b1b1da6bf40ed4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &52877044
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52877042}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -21.760864, y: -2.990275, z: -41.75001}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &203100962
 GameObject:
   m_ObjectHideFlags: 0
@@ -885,6 +929,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ef603fa2d0b76e48b9bb1253ba36abe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 9.56
+  minVelocityThreshold: 1.17
   rotationSpeed: 3.11
   cohesionRadius: 13.6
   seperationRadius: 5.21
@@ -906,8 +952,6 @@ MonoBehaviour:
   seperationRule: 1
   alignmentRule: 1
   escapeRule: 1
-  maxVelocity: 9.56
-  minVelocityThreshold: 1.17
   predator: {fileID: 0}
   bound: {fileID: 1272720370}
   yOffset: 1.66
@@ -1503,13 +1547,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc9970c1ece3d1644951153e7f17d622, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flock: {fileID: 0}
-  movingSpeed: 0
-  rotationSpeed: 0
-  grassAndWaterAcceptableRange: 0
-  acceptableFoodLevel: 0
-  acceptableWaterLevel: 0
-  wanderingRadius: 0
+  flock: {fileID: 1137874197}
+  dog: {fileID: 24281475}
+  movingSpeed: 10
+  rotationSpeed: 10
+  grassAndWaterAcceptableRange: 5
+  acceptableFoodLevel: 5
+  acceptableWaterLevel: 5
+  wanderingRadius: 10
 --- !u!4 &1859070970
 Transform:
   m_ObjectHideFlags: 0
@@ -1749,3 +1794,4 @@ SceneRoots:
   - {fileID: 1272720371}
   - {fileID: 1244341836}
   - {fileID: 1859070970}
+  - {fileID: 52877044}

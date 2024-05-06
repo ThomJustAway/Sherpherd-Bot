@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace Sheep
 {
+    /// <summary>
+    /// The behaviour of how the sheep might behave in the simulation
+    /// The behaviour is simplfied for the simulation 
+    /// </summary>
     public class SheepBehaviour : MonoBehaviour
     {
         [SerializeField] private SheepFlock flock;
@@ -24,12 +28,13 @@ namespace Sheep
         {
             get { return fur; } 
             set {
+                //when setting the value of the fur
+                //automatically adjust the fur model size.
                 fur = value;
                 furModel.localScale = new Vector3(
                     furOriginalSize + fur * flock.FurModelGrowth,
                     furOriginalSize + fur * flock.FurModelGrowth,
                     furOriginalSize);
-                //set transform model
             }
         }
 
@@ -39,12 +44,13 @@ namespace Sheep
         public void Init(SheepFlock flock)
         {
             this.flock = flock;
+            //set up the states for the FSM.
             fsm = new FSM();
-            fsm.Add(new SheepMovementState(fsm, flock, this));
+            fsm.Add(new SheepFlockingState(fsm, flock, this));
             fsm.Add(new SheepIdleState(fsm, flock, this));
             fsm.Add(new SheepEatState(fsm, flock, this));
             fsm.Add(new SheepGrowFur(fsm, flock, this));
-            fsm.SetCurrentState((int)SheepStates.Movement);
+            fsm.SetCurrentState((int)SheepStates.Flocking);
         }
 
         private void Start()
@@ -59,8 +65,7 @@ namespace Sheep
             fsm.Update();       
         }
 
-        
-
+        //For debugging puposes
         private void OnDrawGizmosSelected()
         {
             Vector3 centre = transform.position;

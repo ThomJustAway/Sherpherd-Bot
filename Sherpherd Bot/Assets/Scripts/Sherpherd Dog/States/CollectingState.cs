@@ -137,7 +137,7 @@ namespace sherpherdDog
             bool isAngleCorrect = Vector3.Angle(targetDirectionToCG, directionCurrently) < dog.AngleOfAvoidance;
             bool isNearTheSheep = Vector3.Distance(sheepChosenPosition, transform.position) > flock.EscapeRadius;
 
-            Debug.Log($"Is angle good? {isAngleCorrect}");
+            //Debug.Log($"Is angle good? {isAngleCorrect}");
 
             if (isNearTheSheep || isAngleCorrect)
                 return Vector3.zero;

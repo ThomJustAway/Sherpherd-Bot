@@ -42,6 +42,12 @@ namespace GOAPTHOM
 
     public enum Goal
     {
-
+        FeedSheep,
+        HydrateSheep,
+        SheerSheep,
+        Sellfur,
+        FindWaterSource,
+        FindGrassSource,
+        Relax
     }
 }

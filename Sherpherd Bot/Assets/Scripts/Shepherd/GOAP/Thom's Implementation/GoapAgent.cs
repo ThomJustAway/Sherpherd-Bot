@@ -30,7 +30,8 @@ namespace GOAPTHOM
 
         public void CreatePlanner()
         {
-            gPlanner = gFactory.CreatePlanner();
+            //gPlanner = gFactory.CreatePlanner();
+            gPlanner = new GoapPlanner();
         }
 
         public void SetUpdate(UpdateFunction update = null)
