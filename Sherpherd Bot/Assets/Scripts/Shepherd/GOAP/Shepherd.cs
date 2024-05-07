@@ -21,6 +21,7 @@ namespace Assets.Scripts.Shepherd.GOAP
         [SerializeField] ShepherdDog dog;
         [SerializeField] private float movingSpeed;
         [SerializeField] private float rotationSpeed;
+        [SerializeField] private float senseRadius = 5f;
         public Transform GrassPosition { get; private set; }
         public Transform WaterPosition {get; private set; }
         public float WanderingRadius { get => wanderingRadius; set => wanderingRadius = value; }
@@ -50,6 +51,7 @@ namespace Assets.Scripts.Shepherd.GOAP
 
         private void Update()
         {
+            SenseCollision();
             agent.updateFunction();
         }
 
@@ -64,8 +66,8 @@ namespace Assets.Scripts.Shepherd.GOAP
             print($"created belief {beliefs != null}");
             //the values that needs to be change
             beliefsFactory.AddBelief(Beliefs.Nothing, () => false);//can be done repeatedly
-            beliefsFactory.AddBelief(Beliefs.FoundFoodSource, () => GrassPosition.IsUnityNull());
-            beliefsFactory.AddBelief(Beliefs.FoundWatersource, () => WaterPosition.IsUnityNull());
+            beliefsFactory.AddBelief(Beliefs.FoundFoodSource, () => !GrassPosition.IsUnityNull());
+            beliefsFactory.AddBelief(Beliefs.FoundWatersource, () => !WaterPosition.IsUnityNull());
             beliefsFactory.AddBelief(Beliefs.SheepAtFoodSource, () => InWithinLocation(flock.CG, 
                 GrassPosition?.position ?? Vector3.positiveInfinity, //can nvr be reach
                 grassAndWaterAcceptableRange
@@ -161,19 +163,26 @@ namespace Assets.Scripts.Shepherd.GOAP
 
         }
 
-        //will check if it is a water or a food
-        private void OnCollisionEnter(Collision collision)
+        private void SenseCollision()
         {
-            //sense for collision for water and food.
-            if(collision.collider.gameObject.layer == LayerManager.GrassPatchLayer)
+            Collider[] hits = Physics.OverlapSphere(transform.position, senseRadius);
+            
+            foreach(var hit in hits)
             {
-                //that means that it is a grass patch
-                GrassPosition = collision.transform;
+                print($"has hit {hit.transform.name}");
+                if (hit.gameObject.layer == LayerManager.GrassPatchLayer)
+                {
+                    print("found grass patch");
+                    //that means that it is a grass patch
+                    GrassPosition = hit.transform;
+                }
+                else if (hit.gameObject.layer == LayerManager.WaterPatchLayer)
+                {
+                    WaterPosition = hit.transform;
+                }
             }
-            else if(collision.collider.gameObject.layer == LayerManager.WaterPatchLayer)
-            {
-                WaterPosition = collision.transform;
-            }
+
         }
+
     }
 }

@@ -1528,6 +1528,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1859070970}
   - component: {fileID: 1859070969}
+  - component: {fileID: 1859070971}
   m_Layer: 0
   m_Name: Shepherd
   m_TagString: Untagged
@@ -1551,10 +1552,11 @@ MonoBehaviour:
   dog: {fileID: 24281475}
   movingSpeed: 10
   rotationSpeed: 10
+  senseRadius: 5
   grassAndWaterAcceptableRange: 5
   acceptableFoodLevel: 5
   acceptableWaterLevel: 5
-  wanderingRadius: 10
+  wanderingRadius: 2.1
 --- !u!4 &1859070970
 Transform:
   m_ObjectHideFlags: 0
@@ -1564,13 +1566,34 @@ Transform:
   m_GameObject: {fileID: 1859070968}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -28.84, y: 1.0702266, z: -45.35}
+  m_LocalPosition: {x: 11.1, y: 1.0702266, z: -18.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 851090513}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1859070971
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1859070968}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 23
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1864707696
 GameObject:
   m_ObjectHideFlags: 0

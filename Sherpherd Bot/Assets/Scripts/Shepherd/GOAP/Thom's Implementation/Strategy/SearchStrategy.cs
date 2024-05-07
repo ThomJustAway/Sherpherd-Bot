@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Shepherd.GOAP;
 using System;
 using Unity.VisualScripting;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 namespace GOAPTHOM
@@ -25,24 +26,27 @@ namespace GOAPTHOM
         {
             FindNewPosition();
         }
-        public void Update()
+
+        public void Update(float deltaTime)
         {
-            if(Vector3.Distance(shepherd.transform.position, nextDestination) < 1f)
+            if(Vector3.Distance(shepherd.transform.position, nextDestination) < 0.1f)
             {
                 FindNewPosition();
             }
 
-            var direction = (shepherd.transform.position - nextDestination).normalized;
+            var direction = (nextDestination - shepherd.transform.position ).normalized;
             ///move the shepherd and rotate the shepherd
-            shepherd.transform.position += direction * shepherd.MovingSpeed * Time.deltaTime;
             var targetRotation = Quaternion.LookRotation(direction);
+            Debug.DrawLine(shepherd.transform.position, nextDestination, Color.yellow);
+            shepherd.transform.position += direction * shepherd.MovingSpeed * deltaTime;
             shepherd.transform.rotation = Quaternion.Slerp(shepherd.transform.rotation, targetRotation, 
                 Time.deltaTime * shepherd.RotationSpeed);
         }
 
         private void FindNewPosition()
         {
-            nextDestination = shepherd.transform.position + (UnityEngine.Random.insideUnitSphere * shepherd.WanderingRadius).With(y: 0);
+            nextDestination = shepherd.transform.position + 
+                (UnityEngine.Random.insideUnitSphere * shepherd.WanderingRadius).With(y: 0);
         }
 
     }
