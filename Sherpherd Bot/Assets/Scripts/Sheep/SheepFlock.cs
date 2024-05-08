@@ -15,6 +15,7 @@ namespace Sheep
         [SerializeField] private float minVelocityThreshold = 1f;
         [SerializeField] private float rotationSpeed;
 
+        [HideInInspector]public float furOriginalSize = 1.1768f;
         #region radius
         [Header("for flocking")]
         //what radius will the sheep need to have to feel the attraction with the other sheeps
@@ -61,8 +62,9 @@ namespace Sheep
         [SerializeField] private float wallAvoidanceWeight = 4f;
         //second weights
         /*
-        This refer 
-        
+        This refer values that will fine tune the cohesion, seperation and alignment second weight attribute.
+        the second weight is define as the weight that affect a certain attribute based on how close the
+        predator is from the sheep.
         */
         [SerializeField] private float secondCohesionWeight = 1f;
         [SerializeField] private float secondSeperationWeight = 1f;
@@ -70,6 +72,7 @@ namespace Sheep
         #endregion
         #region rules
         [Header("toggle Rules")]
+        //Mainly for seeing how each rule apply to each sheep. Play around with this:)
         [SerializeField] private bool cohesionRule;
         [SerializeField] private bool seperationRule;
         [SerializeField] private bool alignmentRule;
@@ -80,32 +83,53 @@ namespace Sheep
         [SerializeField] private Transform predator;
         #region sheep
         [Header("sheeps")]
-        [SerializeField] private BoxCollider bound;
+        //starting spawn area of the sheep
+        [SerializeField] private BoxCollider spawnBound;
+        //The y position of the sheep.
         [SerializeField] private float yOffset;
+        // How much the wool model should grow
         [SerializeField] private float furModelGrowth;
+        //how many sheep should be in the simulation. (only works during the start of the game)
         [SerializeField] private int numberOfSheep;
         [SerializeField] private GameObject sheepPrefab;
         #endregion
         [Header("Idle")]
+        //how much time is needed to transit to idle state
         [SerializeField] private float timeToEnterIdle;
 
         [Header("Eating")]
+        //a min and max value to randomly get the sheep to eat. if near a grass patch
         [SerializeField] private float timeToEnterEatStateMin;
         [SerializeField] private float timeToEnterEatStateMax;
+        //how much time the sheep needs to eat finish the grass.
         [SerializeField] private float timeToEatFinish;
-        [SerializeField] private float eatingRadius;
+        //the range to eat the grass and drink
+        [SerializeField] private float mouthRadius;
+
+        [Header("Drink")]
+        //a min and max value to randomly get the sheep to eat. if near a grass patch
+        [SerializeField] private float timeToEnterDrinkStateMin;
+        [SerializeField] private float timeToEnterDrinkStateMax;
+        //how much time the sheep needs to eat finish the grass.
+        [SerializeField] private float timeToDrinkFinish;
 
         [Header("Growth")]
+        // the food and water cost in order to grow FUR!
         [SerializeField] private int foodCost = 5;
         [SerializeField] private int waterCost = 5;
         [Range(0, 1)]
+        //the chance of growing wool
         [SerializeField] private float probabilityOfGrowth = 0.5f;
+        //the time needed to do the probability check.
         [SerializeField] private float timeGrowth = 10f;
 
-        //global information
+        //global information. Used to determine the state of the entire flock
         public SheepBehaviour[] Sheeps { get; private set; }
-        public float flockFood { get; private set; }
-        public float flockWater { get; private set; }
+        //how much food and water the flock has eaten and drink in total!
+        public float flocksaturation { get; private set; }
+        public float flockHydration { get; private set; }
+        public float flockWool { get; private set; }
+
 
         #region getter
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
@@ -146,7 +170,7 @@ namespace Sheep
         public float TimeToEatFinish { get => timeToEatFinish; set => timeToEatFinish = value; }
         public float TimeToEnterEatStateMin { get => timeToEnterEatStateMin; set => timeToEnterEatStateMin = value; }
         public float TimeToEnterEatStateMax { get => timeToEnterEatStateMax; set => timeToEnterEatStateMax = value; }
-        public float EatingRadius { get => eatingRadius; set => eatingRadius = value; }
+        public float MouthRadius { get => mouthRadius; set => mouthRadius = value; }
         public int FoodCost { get => foodCost; set => foodCost = value; }
         #endregion
         public int WaterCost { get => waterCost; set => waterCost = value; }
@@ -159,16 +183,22 @@ namespace Sheep
 
         public Vector3 CG { get; private set; }
         public float YOffset { get => yOffset; set => yOffset = value; }
+        public float TimeToEnterDrinkStateMin { get => timeToEnterDrinkStateMin; set => timeToEnterDrinkStateMin = value; }
+        public float TimeToEnterDrinkStateMax { get => timeToEnterDrinkStateMax; set => timeToEnterDrinkStateMax = value; }
+        public float TimeToDrinkFinish { get => timeToDrinkFinish; set => timeToDrinkFinish = value; }
         #endregion
 
         private void Start()
         {
             Predator = GameObject.FindGameObjectWithTag("Predator").transform;
             Sheeps = new SheepBehaviour[numberOfSheep];
+            //set up the sheeps array and predator
+
             for(int i = 0; i < numberOfSheep ; i++)
             {
-                float randX = Random.Range(bound.bounds.min.x, bound.bounds.max.x);
-                float randZ = Random.Range(bound.bounds.min.z, bound.bounds.max.z);
+                //randomly spawn the sheep in the spawn bound
+                float randX = Random.Range(spawnBound.bounds.min.x, spawnBound.bounds.max.x);
+                float randZ = Random.Range(spawnBound.bounds.min.z, spawnBound.bounds.max.z);
                 var sheep = Instantiate(sheepPrefab, 
                     new Vector3(randX,yOffset,randZ) , 
                     Quaternion.identity,
@@ -183,6 +213,7 @@ namespace Sheep
 
         private void Update()
         {
+            //in every update call, check the state of the sheep.
             CalculateFlockData();
         }
 
@@ -190,16 +221,19 @@ namespace Sheep
         {
             float saturationLevel = 0f;
             float hydrationLevel = 0f;
+            float woolLevel = 0f;
             Vector3 val = Vector3.zero;
             foreach(var t in Sheeps)
             {
                 val += t.transform.position;
                 saturationLevel += t.Food;
                 hydrationLevel += t.Water;
+                woolLevel += t.Wool;
             }
             CG = val / Sheeps.Length;
-            flockFood = saturationLevel / Sheeps.Length;
-            flockWater = hydrationLevel / Sheeps.Length;
+            flocksaturation = saturationLevel / Sheeps.Length;
+            flockHydration = hydrationLevel / Sheeps.Length;
+            flockWool = woolLevel/ Sheeps.Length;
         }
 
         private void OnDrawGizmos()

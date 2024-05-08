@@ -10,7 +10,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.Shepherd.GOAP
 {
-
     //
     public class Shepherd : MonoBehaviour
     {
@@ -30,8 +29,8 @@ namespace Assets.Scripts.Shepherd.GOAP
 
         [Header("feeding")]
         [SerializeField] private float grassAndWaterAcceptableRange;
-        [SerializeField] private float acceptableFoodLevel;
-        [SerializeField] private float acceptableWaterLevel;
+        [SerializeField] private float acceptableSaturationLevel;
+        [SerializeField] private float acceptableHydrationLevel;
         [SerializeField] private float wanderingRadius;
         
         private void Start ()
@@ -78,8 +77,11 @@ namespace Assets.Scripts.Shepherd.GOAP
                 flock.CG,
                 grassAndWaterAcceptableRange
                 ));
-            beliefsFactory.AddBelief(Beliefs.SheepEaten, () => flock.flockFood > acceptableFoodLevel);
-            beliefsFactory.AddBelief(Beliefs.SheepHydrated, () => flock.flockWater > acceptableWaterLevel);
+
+            beliefsFactory.AddBelief(Beliefs.SheepEaten, () => flock.flocksaturation > acceptableSaturationLevel);
+            beliefsFactory.AddBelief(Beliefs.SheepHydrated, () => flock.flockHydration > acceptableHydrationLevel);
+
+
 
 
             agent.SetupBeliefs(beliefs);
@@ -90,6 +92,7 @@ namespace Assets.Scripts.Shepherd.GOAP
             var actions = new HashSet<AgentAction>();
             var beliefs = agent.beliefs;
 
+            #region chill behaviour
             actions.Add(new AgentAction
                 .Builder(Actions.Idle)
                 .AddEffect(Beliefs.Nothing, beliefs)
@@ -101,39 +104,63 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .AddEffect(Beliefs.Nothing, beliefs)
                 .WithStrategy(new WanderStrategy(this, 5f))
                 .Build());
+            #endregion
 
-
+            #region finding water patch
             actions.Add(new AgentAction
                 .Builder(Actions.FindingGrassPatch)
-                .AddEffect(Beliefs.SheepAtFoodSource, beliefs)
+                .AddEffect(Beliefs.FoundFoodSource, beliefs)
                 .WithStrategy(new SearchStrategy(this, () => GrassPosition != null ))
                 .Build()
                 );
 
             actions.Add(new AgentAction
                 .Builder(Actions.FindingWaterPatch)
-                .AddEffect(Beliefs.SheepAtWaterSource, beliefs)
+                .AddEffect(Beliefs.FoundWatersource, beliefs)
                 .WithStrategy(new SearchStrategy(this, () => WaterPosition != null))
                 .Build()
                 );
+            #endregion
 
             actions.Add(new AgentAction
                 .Builder(Actions.CommandSheeptoGrassLocation)
                 .AddEffect(Beliefs.SheepAtFoodSource, beliefs)
                 .AddPrecondition(Beliefs.FoundFoodSource, beliefs)
-                .WithStrategy(new DogCommandMoveSheepStrategy(flock,
+                .WithStrategy(
+                new DogCommandMoveSheepStrategy(flock,
                 () => GrassPosition.position,
                 dog ))
                 .Build()
                 );
 
             actions.Add(new AgentAction
-                .Builder(Actions.WaitForSheepToEat)
-                .AddEffect(Beliefs.SheepEaten,beliefs)
-                .AddPrecondition(Beliefs.SheepAtFoodSource, beliefs)
-                .WithStrategy(new WaitTillStrategy(()=> flock.flockFood >= acceptableFoodLevel))
+                .Builder(Actions.CommandSheeptoWaterLocation)
+                .AddEffect(Beliefs.SheepAtWaterSource, beliefs)
+                .AddPrecondition(Beliefs.FoundWatersource, beliefs)
+                .WithStrategy(
+                new DogCommandMoveSheepStrategy(flock,
+                () => WaterPosition.position,
+                dog))
                 .Build()
                 );
+
+            actions.Add(new AgentAction
+                .Builder(Actions.WaitForSheepToDrink)
+                .AddEffect(Beliefs.SheepHydrated,beliefs)
+                .AddPrecondition(Beliefs.SheepAtWaterSource, beliefs)
+                .WithStrategy(new WaitTillStrategy(()=> flock.flockHydration >= acceptableHydrationLevel))
+                .Build()
+                );
+
+            actions.Add(new AgentAction
+                .Builder(Actions.WaitForSheepToEat)
+                .AddEffect(Beliefs.SheepEaten, beliefs)
+                .AddPrecondition(Beliefs.SheepAtFoodSource, beliefs)
+                .WithStrategy(new WaitTillStrategy(() => flock.flocksaturation>= acceptableSaturationLevel))
+                .Build()
+                );
+
+
 
             agent.SetupActions(actions);
 
@@ -154,8 +181,18 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .WithPriority(2)
                 .Build());
 
+            goals.Add(new AgentGoal.Builder(Goal.FindWaterSource)
+                .WithDesiredEffect(Beliefs.FoundWatersource, beliefs)
+                .WithPriority(2)
+                .Build());
+
             goals.Add(new AgentGoal.Builder(Goal.FeedSheep)
                 .WithDesiredEffect(Beliefs.SheepEaten, beliefs)
+                .WithPriority(3)
+                .Build());
+
+            goals.Add(new AgentGoal.Builder(Goal.HydrateSheep)
+                .WithDesiredEffect(Beliefs.SheepHydrated, beliefs)
                 .WithPriority(3)
                 .Build());
 
@@ -169,14 +206,15 @@ namespace Assets.Scripts.Shepherd.GOAP
             
             foreach(var hit in hits)
             {
-                print($"has hit {hit.transform.name}");
-                if (hit.gameObject.layer == LayerManager.GrassPatchLayer)
+                //print($"has hit {hit.transform.name}");
+                string name = LayerMask.LayerToName(hit.gameObject.layer);
+                if (name == "Grass patch")
                 {
-                    print("found grass patch");
+                    //print("found grass patch");
                     //that means that it is a grass patch
                     GrassPosition = hit.transform;
                 }
-                else if (hit.gameObject.layer == LayerManager.WaterPatchLayer)
+                else if (name == "Water patch")
                 {
                     WaterPosition = hit.transform;
                 }
@@ -184,5 +222,10 @@ namespace Assets.Scripts.Shepherd.GOAP
 
         }
 
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, senseRadius);
+        }
     }
 }

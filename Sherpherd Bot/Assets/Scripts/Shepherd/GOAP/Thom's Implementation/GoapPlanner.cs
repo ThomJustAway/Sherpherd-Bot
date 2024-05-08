@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 namespace GOAPTHOM
@@ -19,18 +20,30 @@ namespace GOAPTHOM
                 .Where(g => g.DesiredEffects.Any(b => !b.Evaluate()))
                 .OrderByDescending(g => g == mostRecentGoal ? g.Priority - 0.01 : g.Priority)
                 .ToList();
+
+            Debug.Log($"list of goals {orderedGoals.Count}");
+            for (int i = 0; i < orderedGoals.Count; i++)
+            {
+                Debug.Log($"{orderedGoals[i].Name}");
+            }
+
             //sort the goals that has the most priority.
 
             // Try to solve each goal in order
-            foreach (var goal in orderedGoals)
+            for(int i = 0; i < orderedGoals.Count ; i++)
             {
+                var goal = orderedGoals[i];
                 Node goalNode = new Node(null, null, goal.DesiredEffects, 0);
 
                 // If we can find a path to the goal, return the plan
                 if (FindPath(goalNode, agent.actions))
                 {
                     // If the goalNode has no leaves and no action to perform try a different goal
-                    if (goalNode.IsLeafDead) continue;
+                    if (goalNode.IsLeafDead)
+                    {
+                        Debug.Log($"{goal.Name} is dead");
+                        continue;
+                    }
 
                     Stack<AgentAction> actionStack = new Stack<AgentAction>();
                     while (goalNode.Leaves.Count > 0)

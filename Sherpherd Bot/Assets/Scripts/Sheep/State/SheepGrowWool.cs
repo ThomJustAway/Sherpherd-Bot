@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Sheep
 {
-    public class SheepGrowFur : SheepState
+    public class SheepGrowWool : SheepState
     {
-        public SheepGrowFur(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
+        public SheepGrowWool(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
         {
             mId = (int) SheepStates.GrowFur;
         }
@@ -16,7 +16,7 @@ namespace Sheep
             float randNumber = Random.value;
             if( randNumber < flock.ProbabilityOfGrowth )
             {//means that it can grow
-                sheepBehaviour.Fur += 1;
+                sheepBehaviour.Wool += 1;
                 sheepBehaviour.Food -= flock.FoodCost;
                 sheepBehaviour.Water -= flock.WaterCost;
                 Debug.Log($"{sheepBehaviour.name} Grow!");

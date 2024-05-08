@@ -26,8 +26,9 @@ namespace GOAPTHOM
         //if flock cg is at the target position.
         public bool Complete => Vector3.Distance(flock.CG , targetPosition) < dog.TargetRadius ;
 
-        public void Enter()
+        public void Start()
         {
+            Debug.Log("try command dog");
             dog.ChaseSheeps(positionEval());
             //cache position
             targetPosition = positionEval();

@@ -7,17 +7,17 @@ namespace GOAPTHOM
     {
         FoundWatersource,
         FoundFoodSource,
-        HasWool,
-        NearSheep,
-        WoolOnWagon,
         SheepEaten,
         SheepHydrated,
         SheepNotEaten,
         SheepNotHydrate,
         SheepAtFoodSource,
         SheepAtWaterSource,
+
         SheepHasWool,
-        FurOnGround,
+        NearSheeps,
+
+
         Nothing,
     }
 
@@ -36,7 +36,7 @@ namespace GOAPTHOM
         MoveToOriginalPlace,
         WanderAround,
         CommandSheeptoGrassLocation,
-        CommandSheeptowaterLocation,
+        CommandSheeptoWaterLocation,
 
     }
 

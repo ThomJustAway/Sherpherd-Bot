@@ -6,38 +6,37 @@ namespace Sheep
 {
     /// <summary>
     /// The behaviour of how the sheep might behave in the simulation
-    /// The behaviour is simplfied for the simulation 
+    /// The behaviour is simplfied for the simulation and does not contain a lot of 
+    /// complexity as much of it is within the FSM.
     /// </summary>
     public class SheepBehaviour : MonoBehaviour
     {
-        [SerializeField] private SheepFlock flock;
+        private SheepFlock flock;
         [SerializeField] private Transform furModel;
         public Vector3 Velocity;
         public Vector3 ResultantVelocity;
 
         private FSM fsm;
 
-        //will need to eat and drink to grow fur
+        //will need to eat and drink to grow wool
         //stats
-        private int fur;
+        private int wool;
         private int food;
         private int water;
 
-        private const float furOriginalSize = 1.1768f;
-        public int Fur
+        public int Wool
         {
-            get { return fur; } 
+            get { return wool; } 
             set {
-                //when setting the value of the fur
-                //automatically adjust the fur model size.
-                fur = value;
+                //when setting the value of the wool
+                //automatically adjust the wool model size.
+                wool = value;
                 furModel.localScale = new Vector3(
-                    furOriginalSize + fur * flock.FurModelGrowth,
-                    furOriginalSize + fur * flock.FurModelGrowth,
-                    furOriginalSize);
+                    flock.furOriginalSize + wool * flock.FurModelGrowth,
+                    flock.furOriginalSize + wool * flock.FurModelGrowth,
+                    flock.furOriginalSize);
             }
         }
-
         public int Food { get => food; set => food = value; }
         public int Water { get => water; set => water = value; }
 
@@ -49,7 +48,8 @@ namespace Sheep
             fsm.Add(new SheepFlockingState(fsm, flock, this));
             fsm.Add(new SheepIdleState(fsm, flock, this));
             fsm.Add(new SheepEatState(fsm, flock, this));
-            fsm.Add(new SheepGrowFur(fsm, flock, this));
+            fsm.Add(new SheepGrowWool(fsm, flock, this));
+            fsm.Add(new SheepDrinkState(fsm, flock, this));
             fsm.SetCurrentState((int)SheepStates.Flocking);
         }
 
@@ -57,12 +57,26 @@ namespace Sheep
         {
             Food = 0;
             Water = 0;
-            Fur = 0;
+            Wool = 0;
         }
 
         private void Update()
         {
             fsm.Update();       
+        }
+
+        public int GetFur()
+        {
+            if(Wool > 1)
+            {
+                int amount = Wool - 1;
+                Wool = 1;
+                return amount;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         //For debugging puposes
@@ -78,7 +92,7 @@ namespace Sheep
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(centre, flock.EscapeRadius);
             Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(centre, flock.EatingRadius);
+            Gizmos.DrawWireSphere(centre, flock.MouthRadius);
         }
     }
 }

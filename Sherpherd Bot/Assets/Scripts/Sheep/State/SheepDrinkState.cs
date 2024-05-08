@@ -1,30 +1,30 @@
 ﻿using PGGE.Patterns;
+using Sheep;
 using System.Collections;
-using UnityEditor.Search;
 using UnityEngine;
 
 namespace Sheep
 {
-    public class SheepEatState : SheepState
+    public class SheepDrinkState : SheepState
     {
         private float elapseTime;
 
-        public SheepEatState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
+        public SheepDrinkState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
         {
-            mId = (int)SheepStates.Eat;
+            mId = (int)SheepStates.Drink;
         }
 
         public override void Update()
         {
             SenseDog();
-            while(elapseTime < flock.TimeToEatFinish)
+            while (elapseTime < flock.TimeToDrinkFinish)
             {
                 //wait for the sheep to eat finish
                 elapseTime += Time.deltaTime;
                 return;
             }
-            Debug.Log($"{sheepBehaviour.name} "+"eat");
-            sheepBehaviour.Food += 1; //add one food every time it eats.
+            //Debug.Log($"{sheepBehaviour.name} " + "Drink");
+            sheepBehaviour.Water += 1; //add one food every time it eats.
             mFsm.SetCurrentState((int)SheepStates.Idle);
         }
 
@@ -40,6 +40,5 @@ namespace Sheep
                 mFsm.SetCurrentState((int)SheepStates.Flocking);
             }
         }
-
     }
 }
