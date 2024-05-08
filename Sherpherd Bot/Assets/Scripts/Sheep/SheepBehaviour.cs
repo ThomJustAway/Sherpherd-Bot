@@ -65,18 +65,16 @@ namespace Sheep
             fsm.Update();       
         }
 
-        public int GetFur()
+        public void ShearWool()
         {
-            if(Wool > 1)
-            {
-                int amount = Wool - 1;
-                Wool = 1;
-                return amount;
-            }
-            else
-            {
-                return 0;
-            }
+            if (Wool == 0) return;
+            Transform woolObject =  Instantiate(flock.WoolPrefab, flock.WoolContainer).transform;
+            float scale = 1 + (Wool * 0.1f);
+            //create a wool prefab
+            woolObject.localScale = new Vector3(scale, scale, scale);
+            woolObject.transform.position = transform.position;
+
+            Wool = 0;
         }
 
         //For debugging puposes

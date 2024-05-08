@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GOAPTHOM
+﻿namespace GOAPTHOM
 {
     public class IdleStrategy : IActionStrategy
     {
@@ -18,21 +16,5 @@ namespace GOAPTHOM
 
         public void Start() => timer.Start();
         public void Update(float deltaTime) => timer.Tick(deltaTime);
-    }
-
-    public class WaitTillStrategy : IActionStrategy
-    {
-        private readonly Func<bool> eval;
-
-        public WaitTillStrategy(Func<bool> eval)
-        {
-            this.eval = eval;
-        }
-
-        public bool CanPerform => !Complete;
-
-        public bool Complete => eval();
-
-        
     }
 }

@@ -23,16 +23,22 @@ namespace Assets.Scripts.Shepherd.GOAP
         [SerializeField] private float senseRadius = 5f;
         public Transform GrassPosition { get; private set; }
         public Transform WaterPosition {get; private set; }
+        
         public float WanderingRadius { get => wanderingRadius; set => wanderingRadius = value; }
         public float MovingSpeed { get => movingSpeed; set => movingSpeed = value; }
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
+        public float ShearingRadius { get => shearingRadius; set => shearingRadius = value; }
 
         [Header("feeding")]
         [SerializeField] private float grassAndWaterAcceptableRange;
         [SerializeField] private float acceptableSaturationLevel;
         [SerializeField] private float acceptableHydrationLevel;
         [SerializeField] private float wanderingRadius;
-        
+
+        [Header("wool")]
+        [SerializeField] private float acceptableWoolSize;
+        [SerializeField] private Transform sheeringPosition;
+        [SerializeField] private float shearingRadius;
         private void Start ()
         {
             agent = new GoapAgent();
@@ -62,25 +68,37 @@ namespace Assets.Scripts.Shepherd.GOAP
         {
             var beliefs = new Dictionary<string , AgentBelief>();
             var beliefsFactory = new BeliefFactory(transform, beliefs);
-            print($"created belief {beliefs != null}");
-            //the values that needs to be change
+            //For eating and drinking
             beliefsFactory.AddBelief(Beliefs.Nothing, () => false);//can be done repeatedly
+            #region food and water
             beliefsFactory.AddBelief(Beliefs.FoundFoodSource, () => !GrassPosition.IsUnityNull());
             beliefsFactory.AddBelief(Beliefs.FoundWatersource, () => !WaterPosition.IsUnityNull());
             beliefsFactory.AddBelief(Beliefs.SheepAtFoodSource, () => InWithinLocation(flock.CG, 
                 GrassPosition?.position ?? Vector3.positiveInfinity, //can nvr be reach
                 grassAndWaterAcceptableRange
                 ));
-
             beliefsFactory.AddBelief(Beliefs.SheepAtWaterSource, () => InWithinLocation(
                 WaterPosition?.position ?? Vector3.positiveInfinity, 
                 flock.CG,
                 grassAndWaterAcceptableRange
                 ));
-
             beliefsFactory.AddBelief(Beliefs.SheepEaten, () => flock.flocksaturation > acceptableSaturationLevel);
             beliefsFactory.AddBelief(Beliefs.SheepHydrated, () => flock.flockHydration > acceptableHydrationLevel);
-
+            #endregion
+            //for shearing
+            beliefsFactory.AddBelief(Beliefs.SheepAtShearingPosition, () => InWithinLocation(flock.CG,
+                GrassPosition?.position ?? Vector3.positiveInfinity, //can nvr be reach
+                dog.TargetRadius
+                ));
+            beliefsFactory.AddBelief(Beliefs.SheepHasWool, () => flock.flockWool > acceptableWoolSize);
+            beliefsFactory.AddBelief(Beliefs.NearSheeps, () => InWithinLocation(
+                flock.CG,
+                transform.position,
+                senseRadius
+                ));
+            beliefsFactory.AddBelief(Beliefs.FinishShearing, () => flock.flockWool == 0f 
+            && Physics.CheckSphere(transform.position, senseRadius, LayerManager.WoolLayer)
+            );
 
 
 
@@ -122,6 +140,7 @@ namespace Assets.Scripts.Shepherd.GOAP
                 );
             #endregion
 
+            #region moving sheep
             actions.Add(new AgentAction
                 .Builder(Actions.CommandSheeptoGrassLocation)
                 .AddEffect(Beliefs.SheepAtFoodSource, beliefs)
@@ -144,6 +163,9 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .Build()
                 );
 
+            #endregion
+
+            #region waiting actions
             actions.Add(new AgentAction
                 .Builder(Actions.WaitForSheepToDrink)
                 .AddEffect(Beliefs.SheepHydrated,beliefs)
@@ -159,8 +181,30 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .WithStrategy(new WaitTillStrategy(() => flock.flocksaturation>= acceptableSaturationLevel))
                 .Build()
                 );
+            #endregion
 
+            actions.Add(new AgentAction
+                .Builder(Actions.CommandSheeptoShearingLocation)
+                .AddEffect(Beliefs.SheepAtShearingPosition , beliefs)
+                .WithStrategy(new DogCommandMoveSheepStrategy(flock, ()=> sheeringPosition.position, dog ))
+                .Build()
+                );
 
+            actions.Add(new AgentAction
+                .Builder(Actions.MoveToSheeps)
+                .AddEffect(Beliefs.NearSheeps, beliefs)
+                .WithStrategy(new MoveStrategy(this,() => flock.CG))
+                .Build()
+                );
+
+            actions.Add(new AgentAction
+                .Builder(Actions.ShearSheeps)
+                .AddEffect(Beliefs.FinishShearing, beliefs)
+                .AddPrecondition(Beliefs.NearSheeps, beliefs)
+                .AddPrecondition(Beliefs.SheepHasWool, beliefs)
+                .WithStrategy(new ShearingStrategy(flock,this))
+                .Build()
+                );
 
             agent.SetupActions(actions);
 
@@ -194,6 +238,11 @@ namespace Assets.Scripts.Shepherd.GOAP
             goals.Add(new AgentGoal.Builder(Goal.HydrateSheep)
                 .WithDesiredEffect(Beliefs.SheepHydrated, beliefs)
                 .WithPriority(3)
+                .Build());
+
+            goals.Add(new AgentGoal.Builder(Goal.ShearSheep)
+                .WithDesiredEffect(Beliefs.FinishShearing, beliefs)
+                .WithPriority(4)
                 .Build());
 
             agent.SetupGoals(goals);

@@ -1,4 +1,6 @@
 ﻿using Assets.Scripts.Shepherd.GOAP;
+using sherpherdDog;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GOAPTHOM

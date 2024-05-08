@@ -14,10 +14,14 @@ namespace GOAPTHOM
         SheepAtFoodSource,
         SheepAtWaterSource,
 
-        SheepHasWool,
         NearSheeps,
-
-
+        SheepHasWool,
+        FinishShearing,
+        WagonNearby,
+        FinishCollectingWool,
+        SheepAtShearingPosition,
+        
+        IsMountingTheWagon,
         Nothing,
     }
 
@@ -38,6 +42,10 @@ namespace GOAPTHOM
         CommandSheeptoGrassLocation,
         CommandSheeptoWaterLocation,
 
+        //collecting wool,
+        CommandSheeptoShearingLocation,
+        MoveToSheeps,
+        ShearSheeps
     }
 
     public enum Goal
@@ -48,6 +56,7 @@ namespace GOAPTHOM
         Sellfur,
         FindWaterSource,
         FindGrassSource,
-        Relax
+        Relax,
+        ShearSheep
     }
 }

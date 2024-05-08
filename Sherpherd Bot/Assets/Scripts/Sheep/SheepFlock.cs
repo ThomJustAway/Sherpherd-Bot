@@ -92,6 +92,8 @@ namespace Sheep
         //how many sheep should be in the simulation. (only works during the start of the game)
         [SerializeField] private int numberOfSheep;
         [SerializeField] private GameObject sheepPrefab;
+        [SerializeField] private GameObject woolPrefab;
+        [SerializeField] private Transform woolContainer;
         #endregion
         [Header("Idle")]
         //how much time is needed to transit to idle state
@@ -186,6 +188,8 @@ namespace Sheep
         public float TimeToEnterDrinkStateMin { get => timeToEnterDrinkStateMin; set => timeToEnterDrinkStateMin = value; }
         public float TimeToEnterDrinkStateMax { get => timeToEnterDrinkStateMax; set => timeToEnterDrinkStateMax = value; }
         public float TimeToDrinkFinish { get => timeToDrinkFinish; set => timeToDrinkFinish = value; }
+        public GameObject WoolPrefab { get => woolPrefab; set => woolPrefab = value; }
+        public Transform WoolContainer { get => woolContainer; set => woolContainer = value; }
         #endregion
 
         private void Start()

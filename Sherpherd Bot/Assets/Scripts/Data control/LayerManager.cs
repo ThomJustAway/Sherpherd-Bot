@@ -10,5 +10,6 @@ namespace Data_control
         public static int PredatorLayer { get { return 1 << 7; } }
         public static int WallLayer { get { return 1 << 8; } }
         public static int WaterPatchLayer { get { return 1 << 10; } }
+        public static int WoolLayer { get { return 1 << 11;} }
     }
 }
