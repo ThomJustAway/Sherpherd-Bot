@@ -17,7 +17,7 @@ namespace GOAPTHOM
             this.shepherd = shepherd;
         }
 
-        public bool CanPerform => Vector3.Distance(flock.CG, shepherd.transform.position) < 1f;
+        public bool CanPerform => !Complete;
         //make sure that all the sheeps are sheered
         public bool Complete => flock.Sheeps.All(sheep => sheep.Wool == 0);
 
@@ -28,12 +28,13 @@ namespace GOAPTHOM
 
         public void Update(float deltaTime)
         {
+            Debug.Log("sheering state");
             if(Vector3.Distance(shepherd.transform.position, chosenSheepToShear.transform.position) < shepherd.ShearingRadius)
             {
                 chosenSheepToShear.ShearWool();
                 GetClosestSheep();
             }
-            var direction = (shepherd.transform.position - chosenSheepToShear.transform.position).normalized;
+            var direction = (chosenSheepToShear.transform.position - shepherd.transform.position ).normalized;
             ///move the shepherd and rotate the shepherd
             shepherd.transform.position += direction * shepherd.MovingSpeed * Time.deltaTime;
             var targetRotation = Quaternion.LookRotation(direction);

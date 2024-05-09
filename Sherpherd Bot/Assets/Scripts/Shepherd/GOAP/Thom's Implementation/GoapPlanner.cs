@@ -22,10 +22,7 @@ namespace GOAPTHOM
                 .ToList();
 
             Debug.Log($"list of goals {orderedGoals.Count}");
-            for (int i = 0; i < orderedGoals.Count; i++)
-            {
-                Debug.Log($"{orderedGoals[i].Name}");
-            }
+            
 
             //sort the goals that has the most priority.
 

@@ -57,7 +57,6 @@ namespace Sheep
         {
             Saturation = 0;
             Hydration = 0;
-            Wool = 0;
         }
 
         private void Update()
@@ -75,6 +74,16 @@ namespace Sheep
             woolObject.transform.position = transform.position;
 
             Wool = 0;
+        }
+
+        public void AddWool()
+        {
+            Wool++;
+        }
+
+        public void SetWool(int amount)
+        {
+            Wool = amount;
         }
 
         //For debugging puposes

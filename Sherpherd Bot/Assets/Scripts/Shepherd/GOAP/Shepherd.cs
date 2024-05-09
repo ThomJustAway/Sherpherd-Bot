@@ -87,7 +87,7 @@ namespace Assets.Scripts.Shepherd.GOAP
             #endregion
             //for shearing
             beliefsFactory.AddBelief(Beliefs.SheepAtShearingPosition, () => InWithinLocation(flock.CG,
-                GrassPosition?.position ?? Vector3.positiveInfinity, //can nvr be reach
+                sheeringPosition?.position ?? Vector3.positiveInfinity, //can nvr be reach
                 dog.TargetRadius
                 ));
             beliefsFactory.AddBelief(Beliefs.SheepHasWool, () => flock.flockWool > acceptableWoolSize);
@@ -99,8 +99,6 @@ namespace Assets.Scripts.Shepherd.GOAP
             beliefsFactory.AddBelief(Beliefs.FinishShearing, () => flock.flockWool == 0f 
             && Physics.CheckSphere(transform.position, senseRadius, LayerManager.WoolLayer)
             );
-
-
 
             agent.SetupBeliefs(beliefs);
         }
@@ -186,7 +184,9 @@ namespace Assets.Scripts.Shepherd.GOAP
             actions.Add(new AgentAction
                 .Builder(Actions.CommandSheeptoShearingLocation)
                 .AddEffect(Beliefs.SheepAtShearingPosition , beliefs)
-                .WithStrategy(new DogCommandMoveSheepStrategy(flock, ()=> sheeringPosition.position, dog ))
+                .WithStrategy(new DogCommandMoveSheepStrategy(flock, 
+                ()=> sheeringPosition.position, 
+                dog ))
                 .Build()
                 );
 
@@ -200,8 +200,8 @@ namespace Assets.Scripts.Shepherd.GOAP
             actions.Add(new AgentAction
                 .Builder(Actions.ShearSheeps)
                 .AddEffect(Beliefs.FinishShearing, beliefs)
-                .AddPrecondition(Beliefs.NearSheeps, beliefs)
                 .AddPrecondition(Beliefs.SheepHasWool, beliefs)
+                .AddPrecondition(Beliefs.SheepAtShearingPosition,beliefs)
                 .WithStrategy(new ShearingStrategy(flock,this))
                 .Build()
                 );
@@ -274,7 +274,7 @@ namespace Assets.Scripts.Shepherd.GOAP
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, senseRadius);
+            Gizmos.DrawWireSphere(transform.position, shearingRadius);
         }
     }
 }

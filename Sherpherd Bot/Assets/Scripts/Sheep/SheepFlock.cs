@@ -120,6 +120,7 @@ namespace Sheep
         [SerializeField] private int foodCost = 5;
         [SerializeField] private int waterCost = 5;
         [Range(0, 1)]
+        [ContextMenuItem("Add wool All", nameof(AddFurToAllSheep))]
         //the chance of growing wool
         [SerializeField] private float probabilityOfGrowth = 0.5f;
         //the time needed to do the probability check.
@@ -132,7 +133,8 @@ namespace Sheep
         public float flockHydration { get; private set; }
         public float flockWool { get; private set; }
 
-
+        [Header("For Debugging")]
+        [SerializeField] private bool InitWool;
         #region getter
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
         #region radius
@@ -211,6 +213,15 @@ namespace Sheep
                 component.Init(this);
                 component.name = $"sheep {i}";
                 //populating the sheeps
+                if (InitWool)
+                {
+                    print("adding wool");
+                    component.SetWool(5);
+                }
+                else
+                {
+                    component.SetWool(0);
+                }
                 Sheeps[i] = component;
             }
         }
@@ -245,6 +256,14 @@ namespace Sheep
             Gizmos.color = Color.red;
             Gizmos.DrawSphere(CG, 1.5f);
             
+        }
+
+        private void AddFurToAllSheep()
+        {
+            foreach(var sheep in Sheeps)
+            {
+                sheep.AddWool();
+            }
         }
     }
 
