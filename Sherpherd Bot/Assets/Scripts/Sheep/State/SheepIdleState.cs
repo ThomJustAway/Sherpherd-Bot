@@ -26,6 +26,7 @@ namespace Sheep
 
         public override void Enter()
         {
+            //will randomly determine how many seconds to transition to eating or drinking state if the condition is fuillied
             eatTransitionTimer = Random.Range(flock.TimeToEnterEatStateMin , flock.TimeToEnterEatStateMax);
             eatElapseTime = 0f;
 
@@ -35,14 +36,19 @@ namespace Sheep
 
         public override void Update()
         {
+            //check for the condition if it is fuilled and if it is, transition to the respective state.
             //Debug.Log($"{sheepBehaviour.name} "+ "Idle");
             SenseDog();
             SenseEating();
             SenseDrink();
-            DetermineFurGrowth();
+            DetermineWoolGrowth();
         }
 
-        //can improve this by making sure that the face is pointing at the grass
+        /// <summary>
+        /// Check if it is near a grass patch. if it is, it will start a countdown 
+        /// to let the sheep decide if it needs to eat. once the count down is finish,
+        /// transition to eating state.
+        /// </summary>
         private void SenseEating()
         {
             if(!Physics.CheckSphere(transform.position, flock.MouthRadius, LayerManager.GrassPatchLayer))
@@ -59,7 +65,11 @@ namespace Sheep
 
             mFsm.SetCurrentState((int)SheepStates.Eat);
         }
-
+        /// <summary>
+        /// Check if it is near a drinking area. if it is, it will start a countdown 
+        /// to let the sheep decide if it needs to drink. once the count down is finish,
+        /// transition to drinking state.
+        /// </summary>
         private void SenseDrink()
         {
             if (!Physics.CheckSphere(transform.position, flock.MouthRadius, LayerManager.WaterPatchLayer))
@@ -76,7 +86,9 @@ namespace Sheep
 
             mFsm.SetCurrentState((int)SheepStates.Drink);
         }
-
+        /// <summary>
+        /// Transition to escape mode if the sheep is near the shepherd dog.
+        /// </summary>
         private void SenseDog()
         {
             if(Vector3.Distance(flock.Predator.transform.position, transform.position) <= flock.EscapeRadius) 
@@ -84,11 +96,16 @@ namespace Sheep
                 mFsm.SetCurrentState((int)SheepStates.Flocking);
             }
         }
-
-        private void DetermineFurGrowth()
+        /// <summary>
+        /// Will decide if it can grow wool if it has eaten enough food
+        /// and water
+        /// </summary>
+        private void DetermineWoolGrowth()
         {
-            //add this && sheepBehaviour.Water >= flock.WaterCost
-            if (!(sheepBehaviour.Food >= flock.FoodCost ))
+            
+            if (!(sheepBehaviour.Saturation >= flock.FoodCost ) &&
+                !(sheepBehaviour.Hydration >= flock.WaterCost)
+                )
             {
                 growElapseTime = 0f;
                 return;
@@ -101,7 +118,7 @@ namespace Sheep
             }
             //restart the timer
             growElapseTime = 0f;
-            mFsm.SetCurrentState((int)SheepStates.GrowFur);
+            mFsm.SetCurrentState((int)SheepStates.GrowWool);
             
         }
     }

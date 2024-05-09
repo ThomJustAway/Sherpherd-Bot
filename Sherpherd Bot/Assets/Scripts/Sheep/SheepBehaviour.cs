@@ -37,8 +37,8 @@ namespace Sheep
                     flock.furOriginalSize);
             }
         }
-        public int Food { get => food; set => food = value; }
-        public int Water { get => water; set => water = value; }
+        public int Saturation { get => food; set => food = value; }
+        public int Hydration { get => water; set => water = value; }
 
         public void Init(SheepFlock flock)
         {
@@ -55,8 +55,8 @@ namespace Sheep
 
         private void Start()
         {
-            Food = 0;
-            Water = 0;
+            Saturation = 0;
+            Hydration = 0;
             Wool = 0;
         }
 

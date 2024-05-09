@@ -10,29 +10,22 @@ namespace Sheep
 
 namespace Sheep
 {
+    /// <summary>
+    /// The sheep behaviour responsible of flocking with the other neighbours as well as 
+    /// flee from shepherd dog.
+    /// </summary>
     public class SheepFlockingState : SheepState
     {
-
+        //this is all reference in http://www.diva-portal.org/smash/get/diva2:675990/FULLTEXT01.pdf
         private float elapseTime;
-
         public SheepFlockingState(FSM fsm, SheepFlock flock, SheepBehaviour sheep) : base(fsm, flock, sheep)
         {
             mId = (int)SheepStates.Flocking;
         }
 
-        //this is all reference in http://www.diva-portal.org/smash/get/diva2:675990/FULLTEXT01.pdf
-
-        //public SheepFlockingState(FSM fsm, SheepFlock sheep) : base(fsm, sheep)
-        //{
-        //    mId = (int) SheepStates.Flocking;
-        //}
-
-        //will do wondering or roaming around.
-
         public override void Enter()
         {
             elapseTime = 0f;
-            base.Enter();
         }
 
         public override void Update()
@@ -42,13 +35,27 @@ namespace Sheep
             DecidedNextState();
         }
 
+        /// <summary>
+        /// Will decide the velocity of the sheep based on the environment it is surround with
+        /// This includes 
+        /// - Sheeps nearby
+        /// - How close the shepherd dog is from said sheep
+        /// - How close it is near to a wall
+        /// </summary>
         private void CalculateVelocity()
         {
+            //
             Vector3 resultantVector = Vector3.zero;
             //in the paper, there are two multipler that affects the weight
             //First one affects the overall strength of the flock and the other
             //one for fine tuneing the strength of the weight
             float secondWeight = CalculateSecondMultipler();
+
+            //calculate the weight of cohesion, alignment and seperation 
+            // the second weight in the code represent how much the attribute
+            // (cohesion, alignment and seperation) should affect the sheep
+            // the closer the shepherd dog is from the sheep, the more it would 
+            // to stick together.
 
             float weightOfCohesion = (flock.FirstCohesionWeight * (1 + secondWeight * flock.SecondCohesionWeight));
             float weightOfAlignment = (flock.FirstAlignmentWeight * (1 + secondWeight * flock.SecondAlignmentWeight));
@@ -120,6 +127,11 @@ namespace Sheep
         }
 
         #region rules
+        /// <summary>
+        /// Calculate the sheeps that is under the cohesion radius. it would calculate all the nearby
+        /// neighbours position and the center of all the local neighbour
+        /// </summary>
+        /// <returns>The vector that will lead the sheep to the closest local neighbour</returns>
         private Vector3 CohesionRule()
         {
             if (!flock.CohesionRule) return Vector3.zero;
@@ -138,7 +150,10 @@ namespace Sheep
             //return the directional vector of the cohesion rule
             return (result - transform.position).normalized;
         }
-
+        /// <summary>
+        /// find the nearby sheep in the seperation radius and try to avoid them.
+        /// </summary>
+        /// <returns>The seperation vector to avoid the sheeps.</returns>
         private Vector3 SeperationRule()
         {
             Vector3 result = Vector3.zero;
@@ -156,6 +171,10 @@ namespace Sheep
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private Vector3 AlignmentRule()
         {
             Vector3 result = Vector3.zero;

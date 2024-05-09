@@ -24,7 +24,7 @@ namespace Sheep
                 return;
             }
             Debug.Log($"{sheepBehaviour.name} "+"eat");
-            sheepBehaviour.Food += 1; //add one food every time it eats.
+            sheepBehaviour.Saturation += 1; //add one food every time it eats.
             mFsm.SetCurrentState((int)SheepStates.Idle);
         }
 

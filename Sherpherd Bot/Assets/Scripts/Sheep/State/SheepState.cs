@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Sheep
 {
+    //the basic state variable the sheep state should have.
     public class SheepState : FSMState
     {
         protected SheepFlock flock;

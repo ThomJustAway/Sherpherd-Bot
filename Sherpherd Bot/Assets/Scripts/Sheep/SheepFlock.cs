@@ -230,8 +230,8 @@ namespace Sheep
             foreach(var t in Sheeps)
             {
                 val += t.transform.position;
-                saturationLevel += t.Food;
-                hydrationLevel += t.Water;
+                saturationLevel += t.Saturation;
+                hydrationLevel += t.Hydration;
                 woolLevel += t.Wool;
             }
             CG = val / Sheeps.Length;
@@ -254,7 +254,7 @@ namespace Sheep
         Eat,
         Sleep,
         Idle,
-        GrowFur,
+        GrowWool,
         Flocking
     }
 }
