@@ -32,7 +32,7 @@ namespace Sheep
         {
             CalculateVelocity();
             MoveSheep();
-            DecidedNextState();
+            DecidedIfCanIdle();
         }
 
         /// <summary>
@@ -83,39 +83,49 @@ namespace Sheep
             //else check if it falls a certain value. If it does, then stop it from moving.
             if (resultantVector.magnitude < flock.MinVelocityThreshold)
             {
+                //if the velocity is small or not worth considering, stop the sheep
                 resultantVector = Vector3.zero;
             }
             else
             {
+                //Prevent the resultant velocity to be over a vertain magnitude.
                 resultantVector = Vector3.ClampMagnitude(resultantVector, flock.MaxVelocity);
             }
+            
             sheepBehaviour.ResultantVelocity = resultantVector;
             sheepBehaviour.Velocity = resultantVector;
         }
-
+        /// <summary>
+        /// Basic moving script that will move the sheep based on the velocity.
+        /// </summary>
         private void MoveSheep()
         {
+            //basic function to move the sheeps.
             if (sheepBehaviour.Velocity != Vector3.zero)
             {
                 sheepBehaviour.Velocity.y = 0; //clamp the y value
                 var targetRotation = Quaternion.LookRotation(sheepBehaviour.Velocity);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation,
                     Time.deltaTime * flock.RotationSpeed);
+                //rotate the sheep to the intended target velocity
 
                 //move the sheep
                 transform.position += transform.forward * sheepBehaviour.Velocity.magnitude * Time.deltaTime;
             }
         }
-
-        private void DecidedNextState()
+        /// <summary>
+        /// A simple function to see if the sheep can idle.
+        /// </summary>
+        private void DecidedIfCanIdle()
         {
+            //if the sheep is not moving. it means it is now not in a threat.
             if(sheepBehaviour.Velocity == Vector3.zero)
             {
                 //continue the timer
                 elapseTime += Time.deltaTime;
                 if(elapseTime > flock.TimeToEnterIdle)
                 {
-                    //switch to Idle here
+                    //switch to Idle
                     mFsm.SetCurrentState((int)SheepStates.Idle);
                 }
             }
@@ -160,11 +170,14 @@ namespace Sheep
             if (!flock.SeperationRule) return result;
 
             var sheeps = Physics.OverlapSphere(transform.position, flock.SeperationRadius, LayerManager.SheepLayer);
-            if (sheeps.Length == 0) return result;
             //No check when no sheeps detected
+            if (sheeps.Length == 0) return result;
+
             foreach (var collider in sheeps)
             {
+                //get all the sheeps nearby and try to go to the opposite direction from them 
                 Vector3 direction = (transform.position - collider.transform.position);
+                //the strength of the seperation increases as the sheep gets too close using the INVSQRT
                 result += direction.normalized * InvSqrt(direction.magnitude * flock.SeperationSoftness);
             }
 
@@ -172,9 +185,9 @@ namespace Sheep
         }
 
         /// <summary>
-        /// 
+        /// Will try to align the movement direciton with the neighbour flock. 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A resultant vector that give the overall direction of the flock.</returns>
         private Vector3 AlignmentRule()
         {
             Vector3 result = Vector3.zero;
@@ -186,12 +199,19 @@ namespace Sheep
 
             foreach (var lamp in sheeps)
             {
+                 
                 result += lamp.Velocity;
             }
-
+            //find the sum of all the sheeps and get the average to find the overall 
+            //velocity of the sheeps.
             return result / sheeps.Length;
         }
 
+        /// <summary>
+        /// The rule to escape from the shepherd dog. it will try to sense
+        /// if the dog is nearby and would try to flee from it as much as possible.
+        /// </summary>
+        /// <returns>a velocity that will try to avoid the shepherd dog.</returns>
         private Vector3 EscapeRule()
         {
             Vector3 result = Vector3.zero;
@@ -200,19 +220,26 @@ namespace Sheep
             var predator = Physics.OverlapSphere(transform.position, flock.EscapeRadius, LayerManager.PredatorLayer);
             if (predator.Length == 0) return result;
 
+            //will find the predator dogs and would try
+            //and run away from the dog in the opposite direction
+            //invsqrt to make sure it would run faster the closer the dog is.
             Vector3 direction = (transform.position - predator[0].transform.position);
             return direction.normalized * InvSqrt(direction.magnitude * flock.EscapeSoftness);
         }
-
+        /// <summary>
+        /// A simple rule to avoid crashing from the wall.
+        /// </summary>
+        /// <returns>A velocity that will avoid nearby walls</returns>
         private Vector3 WallAvoidanceRule()
         {
             Vector3 result = Vector3.zero;
 
+            //try to find the nearest wall
             var wall = Physics.OverlapSphere(transform.position, flock.WallAvoidanceRadius, LayerManager.WallLayer);
             if (wall.Length == 0) return result;
 
             foreach(var collider in wall)
-            {
+            {//if there is a wall, go to the opposite direction of the wall to avoid collision.
                 var point = collider.ClosestPoint(transform.position);
                 result += transform.position - point;
             }
@@ -222,6 +249,11 @@ namespace Sheep
         #endregion
 
         #region functions
+        /// <summary>
+        /// A special weight that will make the sheep alignment, seperation and cohesion 
+        /// rules be more in effect as the shepherd dog gets closer to the sheeps.
+        /// </summary>
+        /// <returns>A weight that affect the collision,alignment and seperation attributes of the sheep</returns>
         private float CalculateSecondMultipler()
         {
             float distance = Vector3.Distance(flock.Predator.position, transform.position);

@@ -18,7 +18,7 @@ namespace GOAPTHOM
         }
 
         public bool CanPerform => !Complete;
-        //make sure that all the sheeps are sheered
+        //make sure that all the Wools are sheered
         public bool Complete => flock.Sheeps.All(sheep => sheep.Wool == 0);
 
         public void Start()
@@ -29,7 +29,7 @@ namespace GOAPTHOM
         public void Update(float deltaTime)
         {
             Debug.Log("sheering state");
-            if(Vector3.Distance(shepherd.transform.position, chosenSheepToShear.transform.position) < shepherd.ShearingRadius)
+            if(Vector3.Distance(shepherd.transform.position, chosenSheepToShear.transform.position) < shepherd.HandRadius)
             {
                 chosenSheepToShear.ShearWool();
                 GetClosestSheep();
@@ -64,4 +64,5 @@ namespace GOAPTHOM
             }
         }
     }
+
 }

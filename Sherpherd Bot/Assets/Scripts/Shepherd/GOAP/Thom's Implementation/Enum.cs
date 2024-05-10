@@ -20,8 +20,7 @@ namespace GOAPTHOM
         WagonNearby,
         FinishCollectingWool,
         SheepAtShearingPosition,
-        
-        IsMountingTheWagon,
+        SellWool,
         Nothing,
     }
 
@@ -36,7 +35,7 @@ namespace GOAPTHOM
         CollectWool,
         PutWoolInWagon,
         PullWagon,
-        sellWool,
+        SellWool,
         MoveToOriginalPlace,
         WanderAround,
         CommandSheeptoGrassLocation,

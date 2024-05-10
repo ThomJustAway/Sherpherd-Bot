@@ -184,7 +184,10 @@ namespace Sheep
         public float FurModelGrowth { get => furModelGrowth; set => furModelGrowth = value; }
         #endregion
         
-
+        /// <summary>
+        /// an important value to show the average position of all the sheep. 
+        /// Used to group up and know where the flock should be in.
+        /// </summary>
         public Vector3 CG { get; private set; }
         public float YOffset { get => yOffset; set => yOffset = value; }
         public float TimeToEnterDrinkStateMin { get => timeToEnterDrinkStateMin; set => timeToEnterDrinkStateMin = value; }

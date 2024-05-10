@@ -6,11 +6,16 @@ using UnityEngine;
 
 namespace sherpherdDog
 {
+    /// <summary>
+    /// The script that controls the dog behaviour. The sheep dog
+    /// purpose is to make sure the sheeps are in a certain position. that
+    /// the shepherd ask it should go.
+    /// </summary>
     public class ShepherdDog : MonoBehaviour
     {
-        // dog https://royalsocietypublishing.org/doi/epdf/10.1098/rsif.2014.0719
+        //This is the paper reference to implement the controlling sheep.
+        //https://royalsocietypublishing.org/doi/epdf/10.1098/rsif.2014.0719
 
-        //need to have like three behaviour
         [Header("Movement")]
         [SerializeField] private float minSpeed = 1f;
         [SerializeField] private float maxSpeed = 8f;
@@ -18,8 +23,13 @@ namespace sherpherdDog
 
         [Header("Collecting and gathering debugging")]
         [SerializeField] private SheepFlock flockData; //to know what the flock information
+        [Header("Dog sense radius to know where the environment")]
         [SerializeField] private float senseRadius = 30f;
+        [Header("Collection offset is how much distance the dog should " +
+            "be away from the shepherd back in order to bring it to the flock.CG")]
         [SerializeField] private float collectionOffset = 2f;
+        [Header("driving offset is how much distance the dog should " +
+            "be away from the flock.cg back in order to bring it to the target position")]
         [SerializeField] private float drivingOffset = 2f;
         [SerializeField] private float targetRadius = 6f;
         [SerializeField] private float gatheringMultiplier = 1.3f;
@@ -30,6 +40,7 @@ namespace sherpherdDog
         [SerializeField] private float weightOfTarget = 1f;
         [SerializeField] private float weightOfAvoidanceOfOtherSheep = 1f;
         [SerializeField] private float weightOfAvoidanceFromChosenSheep = 1f;
+
         [Header("Debugging")]
         [ContextMenuItem("Move Sheeps to target",nameof(ChaseSheeps))]
         [SerializeField]private Transform target;
@@ -88,6 +99,13 @@ namespace sherpherdDog
             Gizmos.DrawWireSphere(flockData.CG, GatheringRadius);
         }
         
+        /// <summary>
+        /// A instruction given by the shepherd to the dog to 
+        /// make the sheeps move to the intended target point.
+        /// </summary>
+        /// <param name="targetPoint">
+        /// Where the flock should go.
+        /// </param>
         public void ChaseSheeps(Vector3 targetPoint)
         {
             TargetPoint = targetPoint;

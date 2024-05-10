@@ -27,7 +27,7 @@ namespace Assets.Scripts.Shepherd.GOAP
         public float WanderingRadius { get => wanderingRadius; set => wanderingRadius = value; }
         public float MovingSpeed { get => movingSpeed; set => movingSpeed = value; }
         public float RotationSpeed { get => rotationSpeed; set => rotationSpeed = value; }
-        public float ShearingRadius { get => shearingRadius; set => shearingRadius = value; }
+        public float HandRadius { get => handRadius; set => handRadius = value; }
 
         [Header("feeding")]
         [SerializeField] private float grassAndWaterAcceptableRange;
@@ -38,9 +38,35 @@ namespace Assets.Scripts.Shepherd.GOAP
         [Header("wool")]
         [SerializeField] private float acceptableWoolSize;
         [SerializeField] private Transform sheeringPosition;
-        [SerializeField] private float shearingRadius;
+        [SerializeField] private float handRadius;
+        [ContextMenuItem("Add wool",nameof(AddWool))]
+        [SerializeField] private Transform wool;
+        [SerializeField]private int woolAmount;
+        public int WoolAmount
+        {
+            get => woolAmount; private set
+            {
+                woolAmount = value;
+                wool.localScale = new Vector3(woolAmount, woolAmount , woolAmount );
+                wool.localPosition = new Vector3(0, woolAmount / 2, 0) + 
+                    new Vector3(0, 4.5f); //the original height
+            }
+        }
+
+        public float SenseRadius { get => senseRadius; set => senseRadius = value; }
+
+        [Header("Selling")]
+        [SerializeField] private Barn Barn;
+
+        private void AddWool()
+        {
+            WoolAmount++;
+        }
+
         private void Start ()
         {
+            WoolAmount = 0;
+
             agent = new GoapAgent();
             //need to set up the belief, actions, goals of the GOAP
             agent.CreatePlanner();
@@ -63,6 +89,12 @@ namespace Assets.Scripts.Shepherd.GOAP
         private bool InWithinLocation(Vector3 targetPos, Vector3 posToCheck, float radius)
         {
             return Vector3.Distance(targetPos, posToCheck) < radius;
+        }
+        private bool InWithinLocation2D(Vector3 targetPos, Vector3 posToCheck, float radius)
+        {
+            Vector2 pos1 = new Vector2(targetPos.x, targetPos.z);
+            Vector2 pos2 = new Vector2(posToCheck.x, posToCheck.z);
+            return Vector2.Distance(pos1,pos2) < radius;
         }
         private void CreatingBelief()
         {
@@ -94,11 +126,18 @@ namespace Assets.Scripts.Shepherd.GOAP
             beliefsFactory.AddBelief(Beliefs.NearSheeps, () => InWithinLocation(
                 flock.CG,
                 transform.position,
-                senseRadius
+                SenseRadius
                 ));
             beliefsFactory.AddBelief(Beliefs.FinishShearing, () => flock.flockWool == 0f 
-            && Physics.CheckSphere(transform.position, senseRadius, LayerManager.WoolLayer)
+            && Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer)
             );
+
+            beliefsFactory.AddBelief(Beliefs.FinishCollectingWool, () => flock.flockWool == 0f
+            && !Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer)
+            );
+
+            beliefsFactory.AddBelief(Beliefs.SellWool, () => InWithinLocation2D(
+                Barn.transform.position, transform.position, handRadius));
 
             agent.SetupBeliefs(beliefs);
         }
@@ -206,8 +245,23 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .Build()
                 );
 
-            agent.SetupActions(actions);
+            actions.Add(new AgentAction
+                .Builder(Actions.CollectWool)
+                .AddEffect(Beliefs.FinishCollectingWool, beliefs)
+                .AddPrecondition(Beliefs.FinishShearing, beliefs)
+                .WithStrategy(new CollectingStrategy(this))
+                .Build()
+                );
 
+            actions.Add(new AgentAction
+                .Builder(Actions.SellWool)
+                .AddEffect(Beliefs.SellWool, beliefs)
+                .AddPrecondition(Beliefs.FinishCollectingWool, beliefs)
+                .WithStrategy(new SellingStrategy(this,Barn))
+                .Build()
+                );
+
+            agent.SetupActions(actions);
         }
 
         private void CreatingGoals()
@@ -245,13 +299,18 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .WithPriority(4)
                 .Build());
 
+            goals.Add(new AgentGoal.Builder(Goal.Sellfur)
+                .WithDesiredEffect(Beliefs.SellWool, beliefs)
+                .WithPriority(4)
+                .Build());
+
             agent.SetupGoals(goals);
 
         }
 
         private void SenseCollision()
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, senseRadius);
+            Collider[] hits = Physics.OverlapSphere(transform.position, SenseRadius);
             
             foreach(var hit in hits)
             {
@@ -271,10 +330,20 @@ namespace Assets.Scripts.Shepherd.GOAP
 
         }
 
+        public void CollectWool(Transform wool)
+        {
+            WoolAmount += (int)((wool.localScale.x - 1) / 0.1f);
+            wool.gameObject.GetComponent<Collider>().enabled = false;
+            Destroy(wool.gameObject);
+        }
+        public void SetWool(int amount)
+        {
+            WoolAmount = 0;
+        }
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, shearingRadius);
+            Gizmos.DrawWireSphere(transform.position, handRadius);
         }
     }
 }
