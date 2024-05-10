@@ -1454,7 +1454,7 @@ MonoBehaviour:
   timeToDrinkFinish: 1.14
   foodCost: 5
   waterCost: 5
-  probabilityOfGrowth: 0.5
+  probabilityOfGrowth: 0.818
   timeGrowth: 5
   InitWool: 1
 --- !u!4 &1137874198
@@ -2016,7 +2016,7 @@ MonoBehaviour:
   movingSpeed: 10
   rotationSpeed: 10
   senseRadius: 30
-  grassAndWaterAcceptableRange: 5
+  grassAndWaterAcceptableRange: 13
   acceptableSaturationLevel: 5
   acceptableHydrationLevel: 5
   wanderingRadius: 10

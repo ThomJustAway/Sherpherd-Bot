@@ -103,12 +103,11 @@ namespace Sheep
         private void DetermineWoolGrowth()
         {
             
-            if (!(sheepBehaviour.Saturation >= flock.FoodCost ) &&
-                !(sheepBehaviour.Hydration >= flock.WaterCost)
+            if (!((sheepBehaviour.Saturation >= flock.FoodCost ) &&
+                (sheepBehaviour.Hydration >= flock.WaterCost))
                 )
             {
                 growElapseTime = 0f;
-                return;
             }
 
             while( growElapseTime < flock.TimeGrowth)

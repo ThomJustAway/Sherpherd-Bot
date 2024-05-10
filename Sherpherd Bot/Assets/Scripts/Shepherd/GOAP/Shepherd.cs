@@ -132,8 +132,10 @@ namespace Assets.Scripts.Shepherd.GOAP
             && Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer)
             );
 
-            beliefsFactory.AddBelief(Beliefs.FinishCollectingWool, () => flock.flockWool == 0f
-            && !Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer)
+            beliefsFactory.AddBelief(Beliefs.FinishCollectingWool, () => 0.3f > flock.flockWool 
+            && !Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer) 
+            && WoolAmount > 0
+
             );
 
             beliefsFactory.AddBelief(Beliefs.SellWool, () => InWithinLocation2D(
