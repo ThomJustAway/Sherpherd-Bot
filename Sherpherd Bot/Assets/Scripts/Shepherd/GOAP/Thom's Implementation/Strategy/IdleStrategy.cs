@@ -1,5 +1,8 @@
 ﻿namespace GOAPTHOM
 {
+    /// <summary>
+    /// idle strategy for the shepherd to chill and relax :)
+    /// </summary>
     public class IdleStrategy : IActionStrategy
     {
         public bool CanPerform => true; // Agent can always Idle
@@ -7,6 +10,8 @@
 
         readonly CountdownTimer timer;
 
+        //will just wait for timer to complete once the timer is up.
+        //it finish it's idle strategy. 
         public IdleStrategy(float duration)
         {
             timer = new CountdownTimer(duration);

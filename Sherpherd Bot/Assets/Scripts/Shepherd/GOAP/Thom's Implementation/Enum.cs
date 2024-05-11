@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace GOAPTHOM
 {
+    //contains the enum for belief, actions and goals.
     public enum Beliefs
     {
         FoundWatersource,
@@ -13,11 +14,9 @@ namespace GOAPTHOM
         SheepNotHydrate,
         SheepAtFoodSource,
         SheepAtWaterSource,
-
         NearSheeps,
         SheepHasWool,
         FinishShearing,
-        WagonNearby,
         FinishCollectingWool,
         SheepAtShearingPosition,
         SellWool,

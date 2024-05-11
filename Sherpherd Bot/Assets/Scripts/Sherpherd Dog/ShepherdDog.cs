@@ -23,12 +23,12 @@ namespace sherpherdDog
 
         [Header("Collecting and gathering debugging")]
         [SerializeField] private SheepFlock flockData; //to know what the flock information
-        [Header("Dog sense radius to know where the environment")]
+        [Tooltip("Dog sense radius to know where the environment")]
         [SerializeField] private float senseRadius = 30f;
-        [Header("Collection offset is how much distance the dog should " +
+        [Tooltip("Collection offset is how much distance the dog should " +
             "be away from the shepherd back in order to bring it to the flock.CG")]
         [SerializeField] private float collectionOffset = 2f;
-        [Header("driving offset is how much distance the dog should " +
+        [Tooltip("driving offset is how much distance the dog should " +
             "be away from the flock.cg back in order to bring it to the target position")]
         [SerializeField] private float drivingOffset = 2f;
         [SerializeField] private float targetRadius = 6f;
@@ -69,10 +69,11 @@ namespace sherpherdDog
 
         private void Start()
         {
+            //init the FSM and add the states for the dog to start running
             fsm = new FSM();
             fsm.Add(new CollectingState(fsm, this, flockData));
             fsm.Add(new DrivingState(fsm, this, flockData));
-            fsm.Add(new ListeningState(fsm, this));
+            fsm.Add(new IdleState(fsm, this));
             fsm.SetCurrentState((int)DogState.ListeningState);
         }
 

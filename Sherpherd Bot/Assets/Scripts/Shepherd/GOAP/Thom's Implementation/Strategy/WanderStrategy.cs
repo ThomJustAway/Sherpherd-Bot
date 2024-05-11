@@ -5,6 +5,11 @@ using UnityEngine;
 
 namespace GOAPTHOM
 {
+
+    /// <summary>
+    /// the wander strategy is a where the shepherd would 
+    /// walk around until a certain timer is up.
+    /// </summary>
     public class WanderStrategy : IActionStrategy
     {
         readonly Shepherd shepherd;
@@ -19,6 +24,7 @@ namespace GOAPTHOM
             timer = new CountdownTimer(time);
             timer.OnTimerStart += () => Complete = false;
             timer.OnTimerStop += () => Complete = true;
+            //once the timer stop. the startegy is completed.
         }
 
         public void Start()
@@ -34,7 +40,7 @@ namespace GOAPTHOM
             if(Vector3.Distance(shepherd.transform.position, nextDestination) < 1f)
             {
                 FindNewPosition();
-            }
+            }//the shepherd will evaluate a new position to walk to once it reach a certain destination.
 
             var direction = (shepherd.transform.position - nextDestination).normalized;
             ///move the shepherd and rotate the shepherd

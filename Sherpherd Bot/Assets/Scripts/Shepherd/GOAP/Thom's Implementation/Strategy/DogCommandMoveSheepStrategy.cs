@@ -7,6 +7,10 @@ using UnityEngine;
 
 namespace GOAPTHOM
 {
+    /// <summary>
+    /// for commanding the dog to make it such that it will move the flock to the a 
+    /// certain area.
+    /// </summary>
     public class DogCommandMoveSheepStrategy : IActionStrategy
     {
         private SheepFlock flock;
@@ -25,7 +29,7 @@ namespace GOAPTHOM
         public bool CanPerform => !Complete;
         //if flock cg is at the target position.
         public bool Complete => Vector3.Distance(flock.CG , targetPosition) < dog.TargetRadius ;
-
+        //will do nothing until the dog manage to bring the flock to the target position
         public void Start()
         {
             Debug.Log("try command dog");

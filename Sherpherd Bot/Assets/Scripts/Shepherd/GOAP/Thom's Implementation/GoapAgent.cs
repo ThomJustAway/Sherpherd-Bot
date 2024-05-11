@@ -8,6 +8,8 @@ using UnityEngine.AI;
 
 namespace GOAPTHOM
 {
+    //the GOAP implementation was taken from git amend
+    //https://www.youtube.com/watch?v=T_sBYgP7_2k&pp=ygUXZ29hcCBpbXBsZW1lbnRhdGlvbiBnaXQ%3D
     public class GoapAgent 
     {
         AgentGoal lastGoal; 
@@ -26,11 +28,12 @@ namespace GOAPTHOM
 
         public delegate void UpdateFunction();
 
-        public UpdateFunction updateFunction;//call the update function in any class
+        public UpdateFunction updateFunction;
+        //call the update function in any class
+        //able to implement your own update function for extra customizability
 
         public void CreatePlanner()
         {
-            //gPlanner = gFactory.CreatePlanner();
             gPlanner = new GoapPlanner();
         }
 

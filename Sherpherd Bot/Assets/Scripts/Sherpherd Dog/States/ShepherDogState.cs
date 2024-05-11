@@ -4,11 +4,14 @@ using UnityEngine;
 
 namespace sherpherdDog
 {
-    public class SherpherDogState : FSMState
+    /// <summary>
+    /// Base state that every shepherd dog should have.
+    /// </summary>
+    public class ShepherDogState : FSMState
     {
         protected ShepherdDog dog;
         protected Transform transform;
-        public SherpherDogState(FSM fsm , ShepherdDog dog) : base(fsm)
+        public ShepherDogState(FSM fsm , ShepherdDog dog) : base(fsm)
         {
             this.dog = dog;
             transform = dog.transform;

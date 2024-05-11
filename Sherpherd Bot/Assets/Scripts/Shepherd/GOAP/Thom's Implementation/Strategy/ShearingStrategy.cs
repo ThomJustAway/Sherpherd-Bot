@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace GOAPTHOM
 {
+    /// <summary>
+    /// shearing strategy is when the shepherd would shear nearby 
+    /// sheeps until all the sheeps are sheared off completely.
+    /// </summary>
     public class ShearingStrategy : IActionStrategy
     {
         readonly SheepFlock flock;
@@ -18,11 +22,12 @@ namespace GOAPTHOM
         }
 
         public bool CanPerform => !Complete;
-        //make sure that all the Wools are sheered
+        //make sure that all the Wools are sheared
         public bool Complete => flock.Sheeps.All(sheep => sheep.Wool == 0);
-
+        //the strategy is complete once all the sheep are completely sheared off.
         public void Start()
         {
+            //get a near sheep.
             GetClosestSheep();
         }
 
@@ -31,6 +36,7 @@ namespace GOAPTHOM
             Debug.Log("sheering state");
             if(Vector3.Distance(shepherd.transform.position, chosenSheepToShear.transform.position) < shepherd.HandRadius)
             {
+                //if the shepherd can interact with the sheep, shear the sheep and re-evaluate the next clostest sheep.
                 chosenSheepToShear.ShearWool();
                 GetClosestSheep();
             }
@@ -49,7 +55,7 @@ namespace GOAPTHOM
                 .ToArray();
 
             if (sheeps.Length == 0) return;
-
+            //get all teh sheeps that still have wool
             Vector3 shepherdPos = shepherd.transform.position;
             var closestDistance = Vector3.Distance(shepherdPos, sheeps[0].transform.position);
             chosenSheepToShear = sheeps[0];
@@ -60,6 +66,7 @@ namespace GOAPTHOM
                 {
                     chosenSheepToShear = sheeps[i];
                     closestDistance = dis;
+                    //filter them all out to get the closest sheep.
                 }
             }
         }

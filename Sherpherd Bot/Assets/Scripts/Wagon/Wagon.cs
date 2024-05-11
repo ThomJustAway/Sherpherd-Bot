@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Wagon
 {
+    //ignore this. for assignment 2 :)
     public class Wagon : MonoBehaviour
     {
         [ContextMenuItem("Add fur",nameof(Add))]

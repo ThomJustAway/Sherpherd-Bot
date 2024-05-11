@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Script that contain the barn behaviour.
+/// </summary>
 public class Barn : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI text;
@@ -22,11 +25,11 @@ public class Barn : MonoBehaviour
     {
         MoneyCollected = 0;
     }
-
+    //If the shepherd wants to sell the fur. the shepherd would would earn money.
     public void SellFur(Shepherd shepherd)
     {
         int amount = shepherd.WoolAmount;
-        shepherd.SetWool(0);
+        shepherd.ResetWool();
         MoneyCollected += amount;
     }
 }
