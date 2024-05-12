@@ -55,6 +55,7 @@ namespace Sheep
 
         private void Start()
         {
+            //make sure that the saturation and hydration are 0.
             Saturation = 0;
             Hydration = 0;
         }
@@ -63,19 +64,23 @@ namespace Sheep
         {
             fsm.Update();       
         }
-
+        //shear wool is to remove the wool from the shepherd. uses the scale to store the amount of wool
+        //the wool object has.
         public void ShearWool()
         {
             if (Wool == 0) return;
             Transform woolObject =  Instantiate(flock.WoolPrefab, flock.WoolContainer).transform;
             float scale = 1 + (Wool * 0.1f);
+            //as
             //create a wool prefab
             woolObject.localScale = new Vector3(scale, scale, scale);
             woolObject.transform.position = transform.position;
 
             Wool = 0;
         }
-
+        /// <summary>
+        /// Add wool to the sheep to show the growth.
+        /// </summary>
         public void AddWool()
         {
             Wool++;

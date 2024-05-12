@@ -8,7 +8,7 @@ using UnityEngine.AI;
 
 namespace GOAPTHOM
 {
-    //the GOAP implementation was taken from git amend
+    //the GOAP implementation was inspired by Git-amend. U can take a look at his implementation
     //https://www.youtube.com/watch?v=T_sBYgP7_2k&pp=ygUXZ29hcCBpbXBsZW1lbnRhdGlvbiBnaXQ%3D
     public class GoapAgent 
     {
