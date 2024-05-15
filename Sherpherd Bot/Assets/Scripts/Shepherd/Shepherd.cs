@@ -1,10 +1,12 @@
-﻿using Data_control;
+﻿using BehaviourTreeImplementation;
+using Data_control;
 using GOAPTHOM;
 using Sheep;
 using sherpherdDog;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -40,7 +42,7 @@ namespace Assets.Scripts.Shepherd.GOAP
 
         [Header("wool")]
         [SerializeField] private float acceptableWoolSize;
-        [SerializeField] private Transform sheeringPosition;
+        [SerializeField] private Transform shearingPosition;
         [SerializeField] private float handRadius;
         [ContextMenuItem("Add wool",nameof(AddWool))]
         [SerializeField] private Transform wool;
@@ -61,6 +63,12 @@ namespace Assets.Scripts.Shepherd.GOAP
         [Header("Selling")]
         [SerializeField] private Barn Barn;
 
+        [Header("Behaviour Tree")]
+        [SerializeField] private bool useBehaviourTree;
+        public bool UseBehaviourTree { get => useBehaviourTree; set => useBehaviourTree = value; }
+
+        private BehaviourTree behaviourTree;
+
         private void AddWool()
         {
             WoolAmount++;
@@ -70,25 +78,190 @@ namespace Assets.Scripts.Shepherd.GOAP
         {
             WoolAmount = 0;
 
-            agent = new GoapAgent();
-            //need to set up the belief, actions, goals of the GOAP
-            //agent set up planner and update loop create the base line logic.
-            agent.CreatePlanner();
-            agent.SetUpdate();
-
-            //setting up beliefs, actions and goals for the agent to know.
-            CreatingBelief();
-            CreatingActions();
-            CreatingGoals();
+            if (useBehaviourTree)
+            {
+                ImplementBehaviourTree();
+            }
+            else
+            {
+                ImplementGOAP();
+            }
             
+
+            void ImplementGOAP()
+            {
+                agent = new GoapAgent();
+                //need to set up the belief, actions, goals of the GOAP
+                //agent set up planner and update loop create the base line logic.
+                agent.CreatePlanner();
+                agent.SetUpdate();
+
+                //setting up beliefs, actions and goals for the agent to know.
+                CreatingBelief();
+                CreatingActions();
+                CreatingGoals();
+            }
+            void ImplementBehaviourTree()
+            {
+                behaviourTree = new BehaviourTree();
+                behaviourTree.SetUpSelection();
+
+                var sellWool = new SequenceNode("Sell wool");
+                sellWool.AddChild(new Leaf("complete shearing" ,
+                    new Condition(()=>flock.flockWool == 0 &&
+                    Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer))
+                    ));
+                var sellWoolAction = new SequenceNode("Sell wool");
+                sellWool.AddChild(sellWoolAction);
+                #region sell wool
+
+                sellWoolAction.AddChild(new Leaf("collect wool",
+                    new CollectingWool(this)));
+                sellWoolAction.AddChild(new Leaf("move to Barn" , 
+                    new MoveTo(()=> InWithinLocation2D(Barn.transform.position, 
+                    transform.position, 
+                    handRadius),
+                    this,
+                    () => Barn.transform.position.With(y:0)
+                    )));
+                sellWoolAction.AddChild(new Leaf("sell wool",
+                    new CustomFunc(() =>
+                    {
+                        Barn.SellFur(this);
+                        return Status.Success;
+                    })));
+                #endregion
+
+                // shearing wool
+                var shearSheep = new SequenceNode("Shear wool");
+                shearSheep.AddChild(new Leaf("Sheep has wool",
+                    new Condition(() => flock.flockWool > acceptableWoolSize)));
+
+                #region shearing sheep
+                var shearSheepAction = new SequenceNode("shear wool action");
+                shearSheepAction.AddChild(
+                   new Leaf("Command dog to shearing location",
+                   new CustomFunc(() =>
+                   {
+                       dog.ChaseSheeps(shearingPosition.position);
+                       return Status.Success;
+                   })
+                   ));
+                shearSheepAction.AddChild(
+                    new Leaf("Move to Shearing Position" , 
+                    new MoveTo(()=> InWithinLocation(shearingPosition.position, transform.position, handRadius),
+                    this,
+                    () => shearingPosition.position
+                    )
+                    ));
+                shearSheepAction.AddChild(
+                    new Leaf("Sheeps at location",
+                    new Condition(()=> InWithinLocation(flock.CG, shearingPosition.position, dog.TargetRadius))
+                    ));
+                shearSheepAction.AddChild(
+                    new Leaf("Shear sheep",
+                    new ShearingSheeps(flock, this)
+                    ));
+                shearSheep.AddChild(shearSheepAction);
+                #endregion
+
+                //Hydrate
+                var hydrateSheep = new SequenceNode("Hydrate Sheep");
+                hydrateSheep.AddChild(new Leaf("Is sheep not hydrated",
+                    new Condition(
+                        () => !(flock.flockHydration > acceptableHydrationLevel)
+                    )));
+                
+
+                #region hydrate sheep
+                var hydrateSheepActions = new SequenceNode("Hydrate sheep action");
+                hydrateSheepActions.AddChild(
+                    new Leaf("find water location",
+                    new Search(
+                        () => WaterPosition != null,
+                        this
+                        )
+                    ));
+                hydrateSheepActions.AddChild(
+                    new Leaf("Command dog",
+                    new CustomFunc(() =>
+                    {
+                        dog.ChaseSheeps(WaterPosition.position);
+                        return Status.Success;
+                    })
+                    ));
+                hydrateSheepActions.AddChild(
+                    new Leaf("Wait for sheep to reach",
+                    new Condition
+                    (() => InWithinLocation(flock.CG, WaterPosition.position , dog.TargetRadius) , 
+                    Status.Running)
+                    ));
+                hydrateSheepActions.AddChild(
+                    new Leaf("Wait for sheep to hydrate",
+                    new Condition(()=> flock.flockHydration > acceptableHydrationLevel , Status.Running)
+                    ));
+                hydrateSheep.AddChild(hydrateSheepActions);
+                #endregion
+
+                var feedSheep = new SequenceNode("Feed Sheep");
+                feedSheep.AddChild(new Leaf("Is sheep not fed",
+                    new Condition(
+                        () => !(flock.flocksaturation > acceptableSaturationLevel)
+                    )));
+                #region Feed sheep
+                var FeedSheepActions = new SequenceNode("feed sheep action");
+                FeedSheepActions.AddChild(
+                    new Leaf("find food location",
+                    new Search(
+                        () => GrassPosition != null,
+                        this
+                        )
+                    ));
+                FeedSheepActions.AddChild(
+                    new Leaf("Command dog to location",
+                    new CustomFunc(() =>
+                    {
+                        dog.ChaseSheeps(GrassPosition.position);
+                        return Status.Success;
+                    })
+                    ));
+                FeedSheepActions.AddChild(
+                    new Leaf("Wait for sheep to reach food location",
+                    new Condition
+                    (() => InWithinLocation(flock.CG, GrassPosition.position, dog.TargetRadius),
+                    Status.Running)
+                    ));
+                FeedSheepActions.AddChild(
+                    new Leaf("Wait for sheep to eat",
+                    new Condition(() => flock.flocksaturation > acceptableSaturationLevel, Status.Running)
+                    ));
+
+                feedSheep.AddChild(FeedSheepActions);
+                #endregion
+                behaviourTree.AddBranch(sellWool);
+                behaviourTree.AddBranch(shearSheep);
+                behaviourTree.AddBranch(hydrateSheep);
+                behaviourTree.AddBranch(feedSheep);
+                behaviourTree.AddBranch(new Leaf("Idle",
+                    new WaitFor(5f)
+                    ));
+            }
         }
 
         private void Update()
         {
             SenseCollision();
-            agent.updateFunction();
+            if ((useBehaviourTree))
+            {
+                behaviourTree.Update();
+            }
+            else
+            {
+                agent.updateFunction();
+            }
         }
 
+        #region Goap
         /// <summary>
         /// create the belief for the GOAP to work with.
         /// </summary>
@@ -120,7 +293,7 @@ namespace Assets.Scripts.Shepherd.GOAP
             #region shearing
             //for shearing
             beliefsFactory.AddBelief(Beliefs.SheepAtShearingPosition, () => InWithinLocation(flock.CG,
-                sheeringPosition?.position ?? Vector3.positiveInfinity, 
+                shearingPosition?.position ?? Vector3.positiveInfinity, 
                 dog.TargetRadius
                 ));//check if the flock is within the shearing position.
             beliefsFactory.AddBelief(Beliefs.SheepHasWool, 
@@ -151,7 +324,7 @@ namespace Assets.Scripts.Shepherd.GOAP
             agent.SetupBeliefs(beliefs);
         }
         /// <summary>
-        /// create the action for the GOAP to work with.
+        /// create the Action for the GOAP to work with.
         /// </summary>
         private void CreatingActions()
         {
@@ -220,7 +393,7 @@ namespace Assets.Scripts.Shepherd.GOAP
                 .Builder(Actions.CommandSheeptoShearingLocation)
                 .AddEffect(Beliefs.SheepAtShearingPosition , beliefs)
                 .WithStrategy(new DogCommandMoveSheepStrategy(flock, 
-                ()=> sheeringPosition.position, 
+                ()=> shearingPosition.position, 
                 dog ))
                 .Build()
                 );
@@ -342,6 +515,13 @@ namespace Assets.Scripts.Shepherd.GOAP
             agent.SetupGoals(goals);
 
         }
+        #endregion
+
+        #region BehaviourTrees
+        
+       
+
+        #endregion
 
         private void SenseCollision()
         {
@@ -396,6 +576,15 @@ namespace Assets.Scripts.Shepherd.GOAP
         public void ResetWool()
         {
             WoolAmount = 0;
+        }
+
+        public void Move(Vector3 direction)
+        {
+            ///move the shepherd and rotate the shepherd
+            transform.position += direction * MovingSpeed * Time.deltaTime;
+            var targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation,
+                Time.deltaTime * RotationSpeed);
         }
         private void OnDrawGizmos()
         {

@@ -24,7 +24,7 @@ namespace OriginalGOAP
             
                 // If we can find a path to the goal, return the plan
                 if (FindPath(goalNode, agent.actions)) {
-                    // If the goalNode has no leaves and no action to perform try a different goal
+                    // If the goalNode has no leaves and no Action to perform try a different goal
                     if (goalNode.IsLeafDead) continue;
                 
                     Stack<AgentAction> actionStack = new Stack<AgentAction>();
@@ -47,13 +47,13 @@ namespace OriginalGOAP
         bool FindPath(Node parent, HashSet<AgentAction> actions) {
             // Order actions by cost, ascending this is so that the 
             var orderedActions = actions.OrderBy(a => a.Cost);
-            //find the action that is of the easiest to execute.
+            //find the Action that is of the easiest to execute.
 
             foreach (var action in orderedActions) {
-                //see what conditions needs to be satisfied for action to take place
+                //see what conditions needs to be satisfied for Action to take place
                 var requiredEffects = parent.RequiredEffects;
             
-                // Remove any effects that evaluate to true, there is no action to take
+                // Remove any effects that evaluate to true, there is no Action to take
                 requiredEffects.RemoveWhere(b => b.Evaluate());
             
                 // If there are no required effects to fulfill, we have a plan
@@ -61,7 +61,7 @@ namespace OriginalGOAP
                     return true;
                 }
 
-                //if the action effect can satisfy the required effects
+                //if the Action effect can satisfy the required effects
                 if (action.Effects.Any(requiredEffects.Contains)) {
                     //create a clone of the required effect and make sure to add conditions is needed to be satisfied
                     var newRequiredEffects = new HashSet<AgentBelief>(requiredEffects);

@@ -19,7 +19,7 @@ namespace GOAPTHOM
 
         public bool CanPerform => shepherd.WoolAmount > 0;
         public bool Complete => shepherd.WoolAmount == 0; 
-        //the action is complete once the shepherd has no more wool
+        //the Action is complete once the shepherd has no more wool
 
         public void Update(float deltaTime)
         {

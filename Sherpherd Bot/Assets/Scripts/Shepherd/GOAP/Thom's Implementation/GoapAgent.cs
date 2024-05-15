@@ -89,64 +89,64 @@ namespace GOAPTHOM
             //actions.Add(new AgentAction.Builder("Relax")
             //    .WithStrategy(new IdleStrategy(5))
             //    .AddEffect(beliefs["Nothing"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("Wander Around")
             //    .WithStrategy(new SearchStrategy(navMeshAgent, 10))
             //    .AddEffect(beliefs["AgentMoving"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("MoveToEatingPosition")
             //    .WithStrategy(new MoveStrategy(navMeshAgent, () => foodShack.position))
             //    .AddEffect(beliefs["AgentAtFoodShack"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("Eat")
             //    .WithStrategy(new IdleStrategy(5))  // Later replace with a Command
             //    .AddPrecondition(beliefs["AgentAtFoodShack"])
             //    .AddEffect(beliefs["AgentIsHealthy"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("MoveToDoorOne")
             //    .WithStrategy(new MoveStrategy(navMeshAgent, () => doorOnePosition.position))
             //    .AddEffect(beliefs["AgentAtDoorOne"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("MoveToDoorTwo")
             //    .WithStrategy(new MoveStrategy(navMeshAgent, () => doorTwoPosition.position))
             //    .AddEffect(beliefs["AgentAtDoorTwo"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("MoveFromDoorOneToRestArea")
             //    .WithCost(2)
             //    .WithStrategy(new MoveStrategy(navMeshAgent, () => restingPosition.position))
             //    .AddPrecondition(beliefs["AgentAtDoorOne"])
             //    .AddEffect(beliefs["AgentAtRestingPosition"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("MoveFromDoorTwoRestArea")
             //    .WithStrategy(new MoveStrategy(navMeshAgent, () => restingPosition.position))
             //    .AddPrecondition(beliefs["AgentAtDoorTwo"])
             //    .AddEffect(beliefs["AgentAtRestingPosition"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("Rest")
             //    .WithStrategy(new IdleStrategy(5))
             //    .AddPrecondition(beliefs["AgentAtRestingPosition"])
             //    .AddEffect(beliefs["AgentIsRested"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("ChasePlayer")
             //    .WithStrategy(new MoveStrategy(navMeshAgent, () => beliefs["PlayerInChaseRange"].Location))
             //    .AddPrecondition(beliefs["PlayerInChaseRange"])
             //    .AddEffect(beliefs["PlayerInAttackRange"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //actions.Add(new AgentAction.Builder("AttackPlayer")
             //    .WithStrategy(new AttackStrategy(animations))
             //    .AddPrecondition(beliefs["PlayerInAttackRange"])
             //    .AddEffect(beliefs["AttackingPlayer"])
-            //    .Build());
+            //    .BuildCompositeNode());
         }
 
         public void SetupGoals(HashSet<AgentGoal> goals)
@@ -157,33 +157,33 @@ namespace GOAPTHOM
             //goals.Add(new AgentGoal.Builder("Chill Out")
             //    .WithPriority(1)
             //    .WithDesiredEffect(beliefs["Nothing"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //goals.Add(new AgentGoal.Builder("Wander")
             //    .WithPriority(1)
             //    .WithDesiredEffect(beliefs["AgentMoving"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //goals.Add(new AgentGoal.Builder("KeepHealthUp")
             //    .WithPriority(2)
             //    .WithDesiredEffect(beliefs["AgentIsHealthy"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //goals.Add(new AgentGoal.Builder("KeepStaminaUp")
             //    .WithPriority(2)
             //    .WithDesiredEffect(beliefs["AgentIsRested"])
-            //    .Build());
+            //    .BuildCompositeNode());
 
             //goals.Add(new AgentGoal.Builder("SeekAndDestroy")
             //    .WithPriority(3)
             //    .WithDesiredEffect(beliefs["AttackingPlayer"])
-            //    .Build());
+            //    .BuildCompositeNode());
         }
 
         #region normal update
         void NormalUpdate()
         {
-            // NormalUpdate the plan and current action if there is one
+            // NormalUpdate the plan and current Action if there is one
             if (currentAction == null)
             {
                 Debug.Log("Calculating any potential new plan");
@@ -211,7 +211,7 @@ namespace GOAPTHOM
                 }
             }
 
-            // If we have a current action, execute it
+            // If we have a current Action, execute it
             if (actionPlan != null && currentAction != null)
             {
                 currentAction.Update(Time.deltaTime);

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace OriginalGOAP
 {
-    //what kind of action the GOAP agent has
+    //what kind of Action the GOAP agent has
     public class AgentAction
     {
         public string Name { get; }
@@ -23,7 +23,7 @@ namespace OriginalGOAP
 
         public void Update(float deltaTime)
         {
-            // Check if the action can be performed and update the strategy
+            // Check if the Action can be performed and update the strategy
             if (strategy.CanPerform)
             {
                 strategy.Update(deltaTime);

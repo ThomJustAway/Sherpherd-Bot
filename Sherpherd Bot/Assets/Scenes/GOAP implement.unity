@@ -2026,6 +2026,7 @@ MonoBehaviour:
   wool: {fileID: 2016198798}
   woolAmount: 0
   Barn: {fileID: 806490675}
+  useBehaviourTree: 1
 --- !u!4 &1859070970
 Transform:
   m_ObjectHideFlags: 0

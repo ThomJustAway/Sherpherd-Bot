@@ -9,13 +9,21 @@ namespace GOAPTHOM
     {
         public override void OnInspectorGUI()
         {
-            GoapAgent agent = ((Shepherd) target).agent;
-
+            Shepherd shepherd = (Shepherd)target;
+            GoapAgent agent = shepherd.agent;
             EditorGUILayout.Space();
             DrawDefaultInspector();
 
             EditorGUILayout.Space();
+            if (!shepherd.UseBehaviourTree)
+            {
+                DrawGOAP(agent);
 
+            }
+        }
+
+        private static void DrawGOAP(GoapAgent agent)
+        {
             if (agent.currentGoal != null)
             {
                 EditorGUILayout.LabelField("Current Goal:", EditorStyles.boldLabel);
@@ -27,7 +35,7 @@ namespace GOAPTHOM
 
             EditorGUILayout.Space();
 
-            // Show current action
+            // Show current Action
             if (agent.currentAction != null)
             {
                 EditorGUILayout.LabelField("Current Action:", EditorStyles.boldLabel);

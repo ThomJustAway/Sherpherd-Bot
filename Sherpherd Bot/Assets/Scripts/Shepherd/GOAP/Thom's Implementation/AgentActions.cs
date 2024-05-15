@@ -26,7 +26,7 @@ namespace GOAPTHOM
 
         public void Update(float deltaTime)
         {
-            // Check if the action can be performed and update the strategy
+            // Check if the Action can be performed and update the strategy
             if (strategy.CanPerform)
             {
                 strategy.Update(deltaTime);

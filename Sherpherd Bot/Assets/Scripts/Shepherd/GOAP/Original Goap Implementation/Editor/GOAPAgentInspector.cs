@@ -22,7 +22,7 @@ public class GOAPAgentInspector : Editor {
 
         EditorGUILayout.Space();
 
-        // Show current action
+        // Show current Action
         if (agent.currentAction != null) {
             EditorGUILayout.LabelField("Current Action:", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();

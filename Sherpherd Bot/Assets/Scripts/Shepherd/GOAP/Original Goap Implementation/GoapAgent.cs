@@ -8,7 +8,7 @@ namespace OriginalGOAP
 {
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(AnimationController))]
-    //the binding of the of the goal, action and plan.
+    //the binding of the of the goal, Action and plan.
     public class GoapAgent : MonoBehaviour
     {
         [Header("Sensors")]
@@ -219,7 +219,7 @@ namespace OriginalGOAP
             statsTimer.Tick(Time.deltaTime);
             animations.SetSpeed(navMeshAgent.velocity.magnitude);
 
-            // NormalUpdate the plan and current action if there is one
+            // NormalUpdate the plan and current Action if there is one
             if (currentAction == null)
             {
                 Debug.Log("Calculating any potential new plan");
@@ -248,7 +248,7 @@ namespace OriginalGOAP
                 }
             }
 
-            // If we have a current action, execute it
+            // If we have a current Action, execute it
             if (actionPlan != null && currentAction != null)
             {
                 currentAction.Update(Time.deltaTime);
