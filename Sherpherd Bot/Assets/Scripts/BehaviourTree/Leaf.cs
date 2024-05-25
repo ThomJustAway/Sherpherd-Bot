@@ -4,8 +4,12 @@ using UnityEngine;
 
 namespace BehaviourTreeImplementation
 {
-
-    public class Leaf : IEvaluator
+    /// <summary>
+    /// Leaf node is a node that will run a singluar action
+    /// It takes in an IAction to know what kind of action the
+    /// leaf is going to do.
+    /// </summary>
+    public class Leaf : IExecutable
     {
         public string Name { get; set; }
         public IAction actions;
@@ -17,9 +21,10 @@ namespace BehaviourTreeImplementation
         }
 
 
-        public Status Evaluate()
+        public Status Execute()
         {
-            Debug.Log($"At leaf {Name}");
+            //for debuggin
+           // Debug.Log($"At leaf {Name}");
 
             return actions.Action();
         }

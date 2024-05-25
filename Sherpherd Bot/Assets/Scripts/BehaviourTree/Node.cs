@@ -4,112 +4,36 @@ using UnityEngine;
 
 namespace BehaviourTreeImplementation
 {
-    //public class NodeFactory
-    //{
-    //    private Dictionary<string, IEvaluator> nodes;
-    //    private CompositeNode compositeNode;
-    //    public NodeFactory()
-    //    {
-    //        nodes = new Dictionary<string, IEvaluator>();
-    //    }
 
-    //    public NodeFactory CreateSelectorNode(string name)
-    //    {
-    //        if(compositeNode != null)
-    //        {
-    //            throw new System.Exception("Node factory cant work on multiple instance of nodes");
-    //        }
-    //        compositeNode = new SelectorNode();
-    //        compositeNode.Name = name;
-    //        return this;
-    //    }
-
-    //    public NodeFactory CreateSequenceNode(string name)
-    //    {
-    //        if (compositeNode != null)
-    //        {
-    //            throw new System.Exception("Node factory cant work on multiple instance of nodes");
-    //        }
-    //        compositeNode = new SequenceNode();
-    //        compositeNode.Name = name;
-    //        return this;
-    //    }
-
-    //    public NodeFactory CreateSelectorNode(LeafName name)
-    //    {
-    //        if (compositeNode != null)
-    //        {
-    //            throw new System.Exception("Node factory cant work on multiple instance of nodes");
-    //        }
-    //        compositeNode = new SelectorNode();
-    //        compositeNode.Name = name.ToString();
-    //        return this;
-    //    }
-
-    //    public NodeFactory CreateSequenceNode(LeafName name)
-    //    {
-    //        if (compositeNode != null)
-    //        {
-    //            throw new System.Exception("Node factory cant work on multiple instance of nodes");
-    //        }
-    //        compositeNode = new SequenceNode();
-    //        compositeNode.Name = name.ToString();
-    //        return this;
-    //    }
-
-    //    public NodeFactory AddNodesComposite(IEvaluator node)
-    //    {
-    //        if (compositeNode == null) throw new System.Exception("Node factory cant work on without composite node");
-
-    //        compositeNode.AddChild(node);
-    //        return this;
-    //    }
-    //    public NodeFactory AddNodesComposite(List<IEvaluator> nodes)
-    //    {
-    //        if (compositeNode == null) throw new System.Exception("Node factory cant work on without composite node");
-
-    //        compositeNode.AddChild(nodes);
-    //        return this;
-    //    }
-    //    public void BuildCompositeNode()
-    //    {
-    //        if (compositeNode == null)
-    //        {
-    //            throw new System.Exception("Node factory cant build without a process node");
-    //        }
-    //        nodes.Add(compositeNode.Name, compositeNode);
-    //        compositeNode = null; //reset the pointer
-    //    }
-
-    //    public Dictionary<string, IEvaluator> Create()
-    //    {
-    //        return nodes;   
-    //    }
-    //}
-
+    /// <summary>
+    /// A sequence Node is a composite node that will check all the children.
+    /// It returns success if all the node can run properly. else it would stop 
+    /// excuting the other node if a node runs as either running or fail.
+    /// </summary>
     public class SequenceNode : CompositeNode
     {
         public SequenceNode(string name) : base(name)
         {
         }
 
-        public override Status Evaluate()
+        public override Status Execute()
         {
-            Debug.Log($"At {Name} node");
+            //Debug.Log($"At {Name} node");
             //starts from left to right
             if (children == null || children?.Count == 0)
             {//check if can start the operation
                 Debug.LogError($"Please create a children for {Name}");
                 return Status.Failed;
             }
-
+            //run through all the node.
             for(; currentChild < children.Count; currentChild++)
             {
-                Status selectedStatus = children[currentChild].Evaluate();
+                Status selectedStatus = children[currentChild].Execute();
                 if (selectedStatus == Status.Success)
                 {
                     if(currentChild == children.Count - 1)
                     {
+                        //if its the final node, then return success
                         currentChild = 0;
                         return Status.Success;
                     }
@@ -117,6 +41,7 @@ namespace BehaviourTreeImplementation
                 }
                 else
                 {
+                    //else return with the coresponding status.
                     return selectedStatus;
                 }
             }
@@ -126,13 +51,18 @@ namespace BehaviourTreeImplementation
         }
     }
 
+    /// <summary>
+    /// A selector node is a composite node that will check all the children
+    /// it has. if a child is failed to execute, then it will move on to the next children
+    /// it would stop running and return the corresponding result if it hits running or success.
+    /// </summary>
     public class SelectorNode : CompositeNode
     {
         public SelectorNode(string name) : base(name)
         {
         }
 
-        public override Status Evaluate()
+        public override Status Execute()
         {
             //start from left to right to decide which state is good
             if (children == null || children?.Count == 0)
@@ -140,15 +70,17 @@ namespace BehaviourTreeImplementation
                 Debug.LogError($"Please create a children for {Name}");
                 return Status.Failed;
             }
+            //wil go through all the children
             for(; currentChild < children.Count; currentChild++)
             {
-                var state = children[currentChild].Evaluate();
+                var state = children[currentChild].Execute();
                 if (state == Status.Failed)
-                {
+                {//it fails if all the child have failed
                     if( currentChild == children.Count - 1) { return Status.Failed; }
                 }
                 else
                 {
+                    //else stop if it recieve any other state.
                     return state;
                 }
             }
@@ -159,10 +91,12 @@ namespace BehaviourTreeImplementation
 
     }
 
-    public abstract class CompositeNode : IEvaluator
+    //a composite node is a node that will consist of multiple node.
+    //it is a simple class for other composite nodes like selector and sequence node.
+    public abstract class CompositeNode : IExecutable
     {
         protected int currentChild;
-        protected List<IEvaluator> children;
+        protected List<IExecutable> children;
 
         protected CompositeNode(string name)
         {
@@ -172,14 +106,14 @@ namespace BehaviourTreeImplementation
 
         public string Name { get ; set ; }
 
-        public abstract Status Evaluate();
+        public abstract Status Execute();
 
-        public void AddChild(IEvaluator child)
+        public void AddChild(IExecutable child)
         {
             children.Add(child);
         }
 
-        public void AddChild(List<IEvaluator> childList)
+        public void AddChild(List<IExecutable> childList)
         {
             children = childList;
         }
@@ -188,15 +122,24 @@ namespace BehaviourTreeImplementation
         {
             Name = name;
         }
+
+        public void Reset()
+        {
+            currentChild = 0;
+        }
     }
 
-    public interface IEvaluator
+    //each node will implement the IExecutable 
+    //as each node needs to execute in order 
+    //to know what status the node is in.
+    public interface IExecutable
     {
         public string Name { get; set; }
 
-        public Status Evaluate();
+        public Status Execute();
     }    
     
+    //what status the node is in. only three which are success/failed/running
     public enum Status
     {
         Failed,

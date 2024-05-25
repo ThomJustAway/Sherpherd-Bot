@@ -63,9 +63,16 @@ namespace Assets.Scripts.Shepherd.GOAP
         [Header("Selling")]
         [SerializeField] private Barn Barn;
 
+        [Header("player interaction")]
+        [SerializeField] private float interactionRange;
+        [SerializeField] private PlayerInteractions player;
+        [SerializeField] private ShepherdUI UI;
+        private bool haveRecieveFood;
         [Header("Behaviour Tree")]
         [SerializeField] private bool useBehaviourTree;
         public bool UseBehaviourTree { get => useBehaviourTree; set => useBehaviourTree = value; }
+        public bool HaveRecieveFood { get => haveRecieveFood; set => haveRecieveFood = value; }
+        public float InteractionRange { get => interactionRange; set => interactionRange = value; }
 
         private BehaviourTree behaviourTree;
 
@@ -78,6 +85,8 @@ namespace Assets.Scripts.Shepherd.GOAP
         {
             WoolAmount = 0;
 
+            //if specify to use behavior tree, it will create the
+            //behaviour tree else the GOAP
             if (useBehaviourTree)
             {
                 ImplementBehaviourTree();
@@ -86,7 +95,6 @@ namespace Assets.Scripts.Shepherd.GOAP
             {
                 ImplementGOAP();
             }
-            
 
             void ImplementGOAP()
             {
@@ -103,10 +111,36 @@ namespace Assets.Scripts.Shepherd.GOAP
             }
             void ImplementBehaviourTree()
             {
-                behaviourTree = new BehaviourTree();
-                behaviourTree.SetUpSelection();
+                behaviourTree = new BehaviourTree(); //create a new behaviour tree
+                behaviourTree.SetUpSelection(); 
 
+                //currently interact player is the most important node in the sequence.
+                //so it will check if the player is nearby. if it is, then it will do the interact player action
+                var interactPlayerNode = new SequenceNode("Interact player node");
+                interactPlayerNode.AddChild(new Leaf("Is Player nearby",
+                    new Condition(() =>
+                    InWithinLocation(player.transform.position, transform.position, interactionRange))
+                    ));
+                #region human interaction
+
+                //will make sure to greet the player when the player is nearby
+                var interactPlayerAction = new SequenceNode("interact player action");
+                interactPlayerAction.AddChild(new Leaf("Greetings",new CustomFunc(() =>
+                {
+                    UI.SetTemporaryMessage(5f, "Howdy! How are U doing!");
+                    return Status.Success;
+                })));
+
+                //After greeting, it will just wait for the player to leave. This also contain 
+                //the code that recieve food and thank the player for helping them give them food
+                interactPlayerAction.AddChild(new Leaf("Waiting",
+                    new WaitingForPlayer(player, UI,this , interactPlayerAction)));
+                interactPlayerNode.AddChild(interactPlayerAction);
+                #endregion
+
+                //sell wool an important action that the shepherd has too take.
                 var sellWool = new SequenceNode("Sell wool");
+                //will check if the action can be perform by checking the surrounding condition
                 sellWool.AddChild(new Leaf("complete shearing" ,
                     new Condition(()=>flock.flockWool == 0 &&
                     Physics.CheckSphere(transform.position, SenseRadius, LayerManager.WoolLayer))
@@ -115,8 +149,10 @@ namespace Assets.Scripts.Shepherd.GOAP
                 sellWool.AddChild(sellWoolAction);
                 #region sell wool
 
+                //if can then the shepherd will run the action if all the flock has been sheared
                 sellWoolAction.AddChild(new Leaf("collect wool",
                     new CollectingWool(this)));
+                //after that, it would move to the barn and sell it.
                 sellWoolAction.AddChild(new Leaf("move to Barn" , 
                     new MoveTo(()=> InWithinLocation2D(Barn.transform.position, 
                     transform.position, 
@@ -124,6 +160,7 @@ namespace Assets.Scripts.Shepherd.GOAP
                     this,
                     () => Barn.transform.position.With(y:0)
                     )));
+                //After the player manage to move to the barn, it can then sell it.
                 sellWoolAction.AddChild(new Leaf("sell wool",
                     new CustomFunc(() =>
                     {
@@ -132,13 +169,15 @@ namespace Assets.Scripts.Shepherd.GOAP
                     })));
                 #endregion
 
-                // shearing wool
+                // shearing wool once the flock manage to reach a acceptable wool size.
                 var shearSheep = new SequenceNode("Shear wool");
                 shearSheep.AddChild(new Leaf("Sheep has wool",
                     new Condition(() => flock.flockWool > acceptableWoolSize)));
 
                 #region shearing sheep
                 var shearSheepAction = new SequenceNode("shear wool action");
+
+                //To shear all the sheep, flock needs to go to the shearing location
                 shearSheepAction.AddChild(
                    new Leaf("Command dog to shearing location",
                    new CustomFunc(() =>
@@ -147,6 +186,8 @@ namespace Assets.Scripts.Shepherd.GOAP
                        return Status.Success;
                    })
                    ));
+
+                //Afterward, the shepherd must be at the shearing position to shear all the sheeps.
                 shearSheepAction.AddChild(
                     new Leaf("Move to Shearing Position" , 
                     new MoveTo(()=> InWithinLocation(shearingPosition.position, transform.position, handRadius),
@@ -154,10 +195,16 @@ namespace Assets.Scripts.Shepherd.GOAP
                     () => shearingPosition.position
                     )
                     ));
+
+                //It would then check if the sheeps are at the shearing location. else it would just be doing nothing
+                //would be cool to have a idle tree here to make the shepherd more interactive.
                 shearSheepAction.AddChild(
                     new Leaf("Sheeps at location",
-                    new Condition(()=> InWithinLocation(flock.CG, shearingPosition.position, dog.TargetRadius))
+                    new Condition(()=> InWithinLocation(flock.CG, shearingPosition.position, dog.TargetRadius) , 
+                    Status.Running)
                     ));
+
+                //After the sheeps are together, the shear all the sheeps.
                 shearSheepAction.AddChild(
                     new Leaf("Shear sheep",
                     new ShearingSheeps(flock, this)
@@ -171,9 +218,9 @@ namespace Assets.Scripts.Shepherd.GOAP
                     new Condition(
                         () => !(flock.flockHydration > acceptableHydrationLevel)
                     )));
-                
 
                 #region hydrate sheep
+                //if the sheeps aren't hydrated, then make sure that the sheeps are hydrated
                 var hydrateSheepActions = new SequenceNode("Hydrate sheep action");
                 hydrateSheepActions.AddChild(
                     new Leaf("find water location",
@@ -182,6 +229,8 @@ namespace Assets.Scripts.Shepherd.GOAP
                         this
                         )
                     ));
+                //make sure that the shepherd found a water position before commanding
+                //the dog to move the said location
                 hydrateSheepActions.AddChild(
                     new Leaf("Command dog",
                     new CustomFunc(() =>
@@ -190,12 +239,16 @@ namespace Assets.Scripts.Shepherd.GOAP
                         return Status.Success;
                     })
                     ));
+
+                //afterwards, just wait for the sheep to reach the destine position.
                 hydrateSheepActions.AddChild(
                     new Leaf("Wait for sheep to reach",
                     new Condition
                     (() => InWithinLocation(flock.CG, WaterPosition.position , dog.TargetRadius) , 
                     Status.Running)
                     ));
+
+                //finally just wait for the sheep to finish drinking.
                 hydrateSheepActions.AddChild(
                     new Leaf("Wait for sheep to hydrate",
                     new Condition(()=> flock.flockHydration > acceptableHydrationLevel , Status.Running)
@@ -203,11 +256,13 @@ namespace Assets.Scripts.Shepherd.GOAP
                 hydrateSheep.AddChild(hydrateSheepActions);
                 #endregion
 
+                //feeding the sheeps
                 var feedSheep = new SequenceNode("Feed Sheep");
                 feedSheep.AddChild(new Leaf("Is sheep not fed",
                     new Condition(
                         () => !(flock.flocksaturation > acceptableSaturationLevel)
                     )));
+                //same thing as hydrating sheep but for the grass patch location.
                 #region Feed sheep
                 var FeedSheepActions = new SequenceNode("feed sheep action");
                 FeedSheepActions.AddChild(
@@ -238,10 +293,15 @@ namespace Assets.Scripts.Shepherd.GOAP
 
                 feedSheep.AddChild(FeedSheepActions);
                 #endregion
+                //the behavior tree is sort out by importance. the 
+                //first branch that is added will have more importance than the following 
+                //branch. 
+                behaviourTree.AddBranch(interactPlayerNode);
                 behaviourTree.AddBranch(sellWool);
                 behaviourTree.AddBranch(shearSheep);
                 behaviourTree.AddBranch(hydrateSheep);
                 behaviourTree.AddBranch(feedSheep);
+                //If there is nothing the shepherd can do, then it will just idle
                 behaviourTree.AddBranch(new Leaf("Idle",
                     new WaitFor(5f)
                     ));
@@ -251,7 +311,7 @@ namespace Assets.Scripts.Shepherd.GOAP
         private void Update()
         {
             SenseCollision();
-            if ((useBehaviourTree))
+            if (useBehaviourTree)
             {
                 behaviourTree.Update();
             }
@@ -517,12 +577,6 @@ namespace Assets.Scripts.Shepherd.GOAP
         }
         #endregion
 
-        #region BehaviourTrees
-        
-       
-
-        #endregion
-
         private void SenseCollision()
         {
             Collider[] hits = Physics.OverlapSphere(transform.position, SenseRadius);
@@ -577,7 +631,6 @@ namespace Assets.Scripts.Shepherd.GOAP
         {
             WoolAmount = 0;
         }
-
         public void Move(Vector3 direction)
         {
             ///move the shepherd and rotate the shepherd
@@ -586,6 +639,11 @@ namespace Assets.Scripts.Shepherd.GOAP
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation,
                 Time.deltaTime * RotationSpeed);
         }
+        public void RecieveFood()
+        {
+            haveRecieveFood = true;
+        }
+
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
