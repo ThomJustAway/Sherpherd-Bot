@@ -18,7 +18,7 @@ namespace BehaviourTreeImplementation
 
         public override Status Execute()
         {
-            //Debug.Log($"At {Name} node");
+            Debug.Log($"At sequence {Name} node");
             //starts from left to right
             if (children == null || children?.Count == 0)
             {//check if can start the operation
@@ -64,6 +64,8 @@ namespace BehaviourTreeImplementation
 
         public override Status Execute()
         {
+            Debug.Log($"At selector {Name} node");
+
             //start from left to right to decide which state is good
             if (children == null || children?.Count == 0)
             {//check if can start the operation

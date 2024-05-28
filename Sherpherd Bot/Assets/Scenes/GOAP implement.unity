@@ -2171,7 +2171,7 @@ MonoBehaviour:
   waterCost: 5
   probabilityOfGrowth: 0.818
   timeGrowth: 5
-  InitWool: 1
+  InitWool: 0
 --- !u!4 &1137874198
 Transform:
   m_ObjectHideFlags: 0

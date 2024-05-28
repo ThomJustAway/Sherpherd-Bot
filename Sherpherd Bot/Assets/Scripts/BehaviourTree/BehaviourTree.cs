@@ -7,6 +7,7 @@ using UnityEngine;
 namespace BehaviourTreeImplementation
 {
     //store the node and leafs
+    //inspired by https://www.youtube.com/watch?v=lusROFJ3_t8
     public class BehaviourTree
     {
         //the starting node should be the 

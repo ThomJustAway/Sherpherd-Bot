@@ -24,7 +24,7 @@ namespace BehaviourTreeImplementation
         public Status Execute()
         {
             //for debuggin
-           // Debug.Log($"At leaf {Name}");
+            Debug.Log($"At leaf {Name}");
 
             return actions.Action();
         }
